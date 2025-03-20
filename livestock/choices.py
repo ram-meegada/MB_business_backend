@@ -21,6 +21,19 @@ breedChoices = [
   [ 'Purnathadi', 'Purnathadi' ]
 ]
 
+BUFFALO_BREEDS = [
+  'Bhadawari',  'Jaffarabadi',
+  'Marathwadi', 'Mehsana',
+  'Murrah',     'Nagpuri',
+  'Nili Ravi',  'Pandharpuri',
+  'Surti',      'Toda',
+  'Banni',      'Chilika',
+  'Kalahandi',  'Luit (Swamp)',
+  'Bargur',     'Chhattisgarhi',
+  'Gojri',      'Dharwadi',
+  'Manda',      'Purnathadi'
+]
+
 is_pregnant = [
     ('YES', 'YES'),
     ('NO', 'NO'),
