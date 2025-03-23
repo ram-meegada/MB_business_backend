@@ -8,8 +8,10 @@ class WriteLiveStockSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LiveStockModel
-        fields = ['id', 'user', 'breed', 'is_pregnant', 'last_calvation_date', 'date_of_birth', 'lactation_month',
+        fields = ['id', 'user', 'image', 'breed', 'is_pregnant', 'last_calvation_date', 'date_of_birth', 'lactation_month',
                   'purchase_price', 'milk_capacity', 'parity', 'seller_details', 'qualities', 'food_habits']
+        extra_kawrgs = {"seller_details": {"default": ""}, "qualities": {"default": ""},
+                        "food_habits": {"default": ""}}
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -17,3 +19,17 @@ class WriteLiveStockSerializer(serializers.ModelSerializer):
             request.data["breed"])
         attrs['live_stock_id'] = live_stock_id
         return super().validate(attrs)
+
+
+class LiveStockListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LiveStockModel
+        fields = ['id', 'live_stock_id', 'image_url', 'breed', 'age',
+                  'milk_capacity', 'parity']
+
+
+class LiveStockByIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LiveStockModel
+        fields = ['id', 'image_url', 'breed', 'age', 'is_pregnant', 'last_calvation_date', 'date_of_birth', 'lactation_month',
+                  'purchase_price', 'milk_capacity', 'parity', 'seller_details', 'qualities', 'food_habits']

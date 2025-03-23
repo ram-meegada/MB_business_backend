@@ -1,0 +1,3 @@
+EXPENDITURE_FOR = [
+    ("")
+]

@@ -2,9 +2,13 @@ from django.db import models
 from authentication.models import UserModel
 from livestock.choices import *
 from authentication.models import BaseModel
+from django.utils.functional import cached_property
+from dateutil.relativedelta import relativedelta
+from datetime import date
 
 
 class LiveStockModel(BaseModel):
+    image = models.ImageField(upload_to='images', blank=True, null=True)
     live_stock_id = models.CharField(unique=True)
     user = models.ForeignKey(UserModel, on_delete=models.DO_NOTHING)
     breed = models.CharField(choices=breedChoices)
@@ -17,7 +21,21 @@ class LiveStockModel(BaseModel):
     parity = models.IntegerField()
     seller_details = models.TextField(blank=True)
     qualities = models.TextField()
-    food_habits = models.TextField()
+    food_habits = models.TextField(blank=True)
+
+    @cached_property
+    def image_url(self):
+        if self.image:
+            return self.image.url
+        return None
+
+    @property
+    def age(self):
+        if self.date_of_birth:
+            today = date.today()
+            age = relativedelta(today, self.date_of_birth)
+            return ("{} Y, {} M, {} D".format(age.years, age.months, age.days))
+        return None
 
     class Meta:
         db_table = "Live Stocks"
