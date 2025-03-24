@@ -34,7 +34,7 @@ class LiveStockModel(BaseModel):
         if self.date_of_birth:
             today = date.today()
             age = relativedelta(today, self.date_of_birth)
-            return ("{} Y, {} M, {} D".format(age.years, age.months, age.days))
+            return ("{} y, {} m, {} d".format(age.years, age.months, age.days))
         return None
 
     class Meta:
