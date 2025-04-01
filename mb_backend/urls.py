@@ -17,10 +17,14 @@ Including another URLconf
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     path('live-stock/', include("livestock.urls")),
-    path('user/auth/', include("authentication.urls"))
+    path('user/auth/', include("authentication.urls")),
+    path('expenditure/', include("Expenditure.urls")),
 ]
 
 if settings.DEBUG:

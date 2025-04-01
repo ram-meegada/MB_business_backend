@@ -14,13 +14,6 @@ class WriteLiveStockSerializer(serializers.ModelSerializer):
                         "food_habits": {"default": ""}
                         }
 
-    def validate(self, attrs):
-        request = self.context.get("request")
-        live_stock_id = generate_new_live_stock_id(
-            request.data["breed"])
-        attrs['live_stock_id'] = live_stock_id
-        return super().validate(attrs)
-
 
 class LiveStockListSerializer(serializers.ModelSerializer):
     class Meta:

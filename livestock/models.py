@@ -9,8 +9,7 @@ from datetime import date
 
 class LiveStockModel(BaseModel):
     image = models.ImageField(upload_to='images', blank=True, null=True)
-    live_stock_id = models.CharField(unique=True)
-    user = models.ForeignKey(UserModel, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(UserModel, on_delete=models.PROTECT)
     breed = models.CharField(choices=breedChoices)
     is_pregnant = models.BooleanField(default=False)
     last_calvation_date = models.DateField(blank=True, null=True)
@@ -36,7 +35,14 @@ class LiveStockModel(BaseModel):
             age = relativedelta(today, self.date_of_birth)
             return ("{} y, {} m, {} d".format(age.years, age.months, age.days))
         return None
+    
+    @property
+    def live_stock_id(self):
+        if self.breed in BUFFALO_BREEDS:
+            return f"B-{self.id}"
+        else:
+            return f"C-{self.id}"
 
     class Meta:
-        db_table = "Live Stocks"
+        db_table = "Live Stock"
         ordering = ['-created_at']
