@@ -4,6 +4,3 @@ from django.apps import AppConfig
 class ExpenditureConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'Expenditure'
-
-    def ready(self):
-        import Expenditure.admin_site

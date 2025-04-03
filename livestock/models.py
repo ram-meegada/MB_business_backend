@@ -44,5 +44,5 @@ class LiveStockModel(BaseModel):
             return f"C-{self.id}"
 
     class Meta:
-        db_table = "Live Stock"
+        db_table = "Live Stock Table"
         ordering = ['-created_at']

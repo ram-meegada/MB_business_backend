@@ -9,6 +9,7 @@ from django.utils import timezone
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q, Sum
+from Expenditure.models import ExpenditureCategoryModel
 
 
 class ExpenditureView(APIView):
@@ -77,3 +78,17 @@ class ExpenditureAnalyticsView(APIView):
         for span, query in temp.items():
             analytics_result[span] = ExpenditureModel.objects.filter(query).aggregate(t=Sum('amount'))["t"]
         return Response({"data": analytics_result, "message": "Expenditure analytics fetched successfully"}, status=200)
+
+
+class ExpenditureCategoryView(APIView):
+    '''
+        This API is for adding category and also fetching all categories.
+    '''
+    def post(self, request):
+        if not request.data.get("name"):
+            return Response({"data": None, "message": "Category name is required"}, status=400)
+
+        ExpenditureCategoryModel.objects.create(name=request.data["name"], parent=request.data.get("parent"))
+        return Response({"data": None, "message": "Expenditure category added successfully"}, status=200)
+    def get(self, request):
+        pass

@@ -26,4 +26,4 @@ class UserModel(AbstractBaseUser, PermissionsMixin, BaseModel):
     REQUIRED_FIELDS = []
 
     class Meta:
-        db_table = 'Users'
+        db_table = 'users'

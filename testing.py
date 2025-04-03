@@ -55,6 +55,99 @@ def exp_an():
     print(ex)
 
 
+def script_for_categories_creation():
+    from Expenditure.models import ExpenditureCategoryModel
+
+    CATEGORY_CHOICES = [
+    ("feed", "Feed"),
+    ("medicine", "Medicine"),
+    ("equipment", "Equipment"),
+    ("maintenance", "Maintenance"),
+    ("labour", "Labour"),
+    ("transportation", "Transportation"),
+    ("utilities", "Utilities"),
+    ("marketing", "Marketing"),
+    ("insurance", "Insurance"),
+    ("loan_repayment", "Loan Repayment"),
+    ("other", "Other"),
+    ]
+
+    SUB_CATEGORY_CHOICES = {
+        "feed": [
+            ("Green Fodder", "Green Fodder"),
+            ("Silage", "Silage"),
+            ("Dry Grass", "Dry Grass"),
+            ("Hay", "Hay"),
+            ("Commercial Feed", "Commercial Feed"),
+            ("Minerals & Vitamins", "Minerals & Vitamins"),
+            ("Feed Transportation", "Feed Transportation"),
+        ],
+        "medicine": [
+            ("Routine Checkups", "Routine Checkups"),
+            ("Vaccinations & Deworming", "Vaccinations & Deworming"),
+            ("Medicines & Antibiotics", "Medicines & Antibiotics"),
+            ("Artificial Insemination (AI) & Breeding", "Artificial Insemination (AI) & Breeding"),
+            ("Pregnancy Care", "Pregnancy Care"),
+        ],
+        "equipment": [
+            ("Milking Machines", "Milking Machines"),
+            ("Milk Cans & Storage", "Milk Cans & Storage"),
+            ("Water Troughs", "Water Troughs"),
+            ("Feed Mixers", "Feed Mixers"),
+            ("Cooling Systems", "Cooling Systems"),
+            ("Farm Tools & Miscellaneous", "Farm Tools & Miscellaneous"),
+        ],
+        "maintenance": [
+            ("Barn Repairs", "Barn Repairs"),
+            ("Fencing Maintenance", "Fencing Maintenance"),
+            ("Machinery Servicing", "Machinery Servicing"),
+            ("Electric & Plumbing Repairs", "Electric & Plumbing Repairs"),
+        ],
+        "labour": [
+            ("Farm Workers Salary", "Farm Workers Salary"),
+            ("Veterinary Assistance", "Veterinary Assistance"),
+            ("Milking Staff", "Milking Staff"),
+            ("Contract Workers", "Contract Workers"),
+        ],
+        "transportation": [
+            ("Milk Transportation", "Milk Transportation"),
+            ("Animal Transport", "Animal Transport"),
+            ("Farm Equipment Transport", "Farm Equipment Transport"),
+        ],
+        "utilities": [
+            ("Electricity", "Electricity"),
+            ("Water Supply", "Water Supply"),
+            ("Internet & Communication", "Internet & Communication"),
+            ("Waste Management", "Waste Management"),
+        ],
+        "marketing": [
+            ("Advertising", "Advertising"),
+            ("Branding & Packaging", "Branding & Packaging"),
+            ("Customer Engagement", "Customer Engagement"),
+        ],
+        "insurance": [
+            ("Livestock Insurance", "Livestock Insurance"),
+            ("Farm Property Insurance", "Farm Property Insurance"),
+            ("Employee Insurance", "Employee Insurance"),
+        ],
+        "loan_repayment": [  # Corrected to match the key in CATEGORY_CHOICES
+            ("Bank Loan", "Bank Loan"),
+            ("Private Loan", "Private Loan"),
+            ("Equipment Financing", "Equipment Financing"),
+        ],
+        "other": [
+            ("Miscellaneous", "Miscellaneous"),
+            ("Government Compliance", "Government Compliance"),
+            ("Farm Expansion", "Farm Expansion"),
+        ],
+    }
+
+    for i in CATEGORY_CHOICES:
+        exp = ExpenditureCategoryModel.objects.create(name=i[1])
+        for j in SUB_CATEGORY_CHOICES[i[0]]:
+            sub_cat = ExpenditureCategoryModel.objects.create(name=j[1], parent=exp)
+
+
+
 if __name__ == "__main__":
-    exp_an()
     pass
