@@ -9,7 +9,8 @@ from django.utils import timezone
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q, Sum
-from Expenditure.models import ExpenditureCategoryModel
+from django.db import connection
+import json
 
 
 class ExpenditureView(APIView):
@@ -22,7 +23,7 @@ class ExpenditureView(APIView):
         return Response({"data": serializer.errors, "message": error}, status=400)
 
     def get(self, request):
-        all_expenditures = ExpenditureModel.objects.all()
+        all_expenditures = ExpenditureModel.objects.filter(user=request.user).select_related('category', 'category__parent')
         serializer = ExpenditureReadSerializer(all_expenditures, many=True)
         return Response({"data": serializer.data, "message": "All Expenditures fetched successfully"}, status=200)
 
@@ -80,15 +81,34 @@ class ExpenditureAnalyticsView(APIView):
         return Response({"data": analytics_result, "message": "Expenditure analytics fetched successfully"}, status=200)
 
 
+
+######################################## Expenditure Category ###########################################
+
 class ExpenditureCategoryView(APIView):
     '''
         This API is for adding category and also fetching all categories.
     '''
     def post(self, request):
-        if not request.data.get("name"):
-            return Response({"data": None, "message": "Category name is required"}, status=400)
+        serializer = ExpenditureCategorySerilaizer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"data": None, "message": "Expenditure category added successfully"}, status=200)
+        error = fetch_serializer_error(serializer.errors)
+        return Response({"data": None, "message": error}, status=400)
 
-        ExpenditureCategoryModel.objects.create(name=request.data["name"], parent=request.data.get("parent"))
-        return Response({"data": None, "message": "Expenditure category added successfully"}, status=200)
     def get(self, request):
-        pass
+        '''
+            Get API for frontend drop down
+        '''
+        try:
+            data = []
+            exp = ExpenditureCategoryModel.objects.filter(parent=None).prefetch_related('subcategories')
+
+            for i in exp:
+                data.append({"id": i.id, "label": i.name, "value": i.name, "isHeader": True})
+                for j in i.subcategories.all():
+                    data.append({"id": j.id, "label": j.name, 'value': j.name})
+
+            return Response({"data": data, "message": "Expenditure categories fetched successfully"}, status=200)
+        except Exception as err:
+            return Response({"data": None, "message": str(err)}, status=500)

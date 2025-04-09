@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-04*fp#rg&n)g+q)$(_d4-looswhd3f6iyv%i1$bj0@fcdj7@)w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.54", "127.0.0.1", "192.168.1.6"]
+ALLOWED_HOSTS = ["192.168.1.54", "127.0.0.1", "192.168.1.6", "192.168.1.7"]
 
 
 # Application definition
@@ -55,6 +55,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE += ['mb_backend.customMiddleware.QueriesCounterMiddleware']
 
 ROOT_URLCONF = 'mb_backend.urls'
 
@@ -156,3 +159,93 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Media files (User uploads, images, etc.)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+
+# Email Sending configuration
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+
+LOGS_PATH = os.path.join(BASE_DIR, 'logs')
+FILE_SIZE = 1024 * 1024 * 5  # 5 MB
+BACKUP_COUNT = 2
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] [{asctime}] [{module}] [{process:d}] [{thread:d}] ==> {message}\n",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "filters": ["require_debug_true"],
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "mail_admins": {
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+            "filters": ["require_debug_false"],
+        },
+        "auth_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "auth.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
+        },
+        "common_handler": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "common.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["mail_admins", "common_handler"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "Authentication": {
+            "handlers": ["auth_handler"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "Common": {
+            "handlers": ["common_handler"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+PRIMARY_MAIL = config('PRIMARY_MAIL')

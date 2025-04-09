@@ -10,7 +10,6 @@ def generate_new_live_stock_id(breed):
         prefix = "B-"
     last_id = LiveStockModel.objects.filter(query).first()
     
-    print(last_id.live_stock_id, '------')
     if last_id:
         suffix = int(last_id.live_stock_id.split('-')[-1])
         name = prefix + str(suffix + 1)

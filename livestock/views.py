@@ -19,8 +19,7 @@ class AddLiveStockView(APIView):
 class ListLiveStockView(APIView):
     def get(self, request):
         try:
-            stock_list = LiveStockModel.objects.filter(is_deleted=False).only(
-                'id', 'breed', 'milk_capacity', 'parity', 'qualities')
+            stock_list = LiveStockModel.objects.filter(is_deleted=False, user=request.user)
             serializer = LiveStockListSerializer(stock_list, many=True)
             return Response({"data": serializer.data, "message": "Live stock data"}, status=200)
         except Exception as err:
