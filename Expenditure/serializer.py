@@ -20,23 +20,22 @@ class ExpenditureWriteSerializer(serializers.ModelSerializer):
 
 
 class ExpenditureReadSerializer(serializers.ModelSerializer):
-    sub_category = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = ExpenditureModel
-        fields = ['id', 'amount', 'sub_category', 'category', 'description', 'created_at']
+        fields = ['id', 'amount', 'category', 'description', 'created_at']
 
-    def get_sub_category(self, obj):
-        try:
-            return obj.category.name
-        except:
-            return ""
     def get_category(self, obj):
         try:
             if obj.category.parent:
-                return obj.category.parent.name
+                return {
+                    "id": obj.category_id,
+                    "parent": obj.category.parent.name,
+                    "parent_id": obj.category.parent_id,
+                    "name": obj.category.name
+                }
             return ""
         except:
             return ""

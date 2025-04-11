@@ -48,7 +48,7 @@ class ManageExpenditureView(APIView):
     def put(self, *args, **kwargs):
         if not self.exp_record:
             return Response({"data": None, "message": NOT_FOUND}, status=400)
-        serializer = ExpenditureReadSerializer(self.exp_record, data=self.request.data, context={"request": self.request})
+        serializer = ExpenditureWriteSerializer(self.exp_record, data=self.request.data, context={"request": self.request})
         if serializer.is_valid():
             serializer.save()
             return Response({"data": None, "message": "Expenditure details updated successfully"}, status=200)
