@@ -8,9 +8,11 @@ from utils.commonUtils import fetch_serializer_error
 from django.utils import timezone
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Func, F, FloatField
+from django.db.models.functions import Cast
 from django.db import connection
 import json
+from utils.expenditureUtils import MONTH_NAMES
 
 
 class ExpenditureView(APIView):
@@ -63,23 +65,30 @@ class ManageExpenditureView(APIView):
 
 
 class ExpenditureAnalyticsView(APIView):
-    def get(self, request):
-        analytics_result = {}
-        today = timezone.now()
+    '''
+        Gives month wise expenditure
+    '''
+    def post(self, request):
+        graph_data = []
 
-        temp = {
-            "last_30_days": Q(created_at__gte=(today - timedelta(days=30)), created_at__lte=today),
-            "last_3_months": Q(created_at__gte=(today - relativedelta(months=3)), created_at__lte=today),
-            "last_6_months": Q(created_at__gte=(today - relativedelta(months=6)), created_at__lte=today),
-            "last_1_year": Q(created_at__gte=(today - relativedelta(years=1)), created_at__lte=today),
-            "last_2_years": Q(created_at__gte=(today - relativedelta(years=2)), created_at__lte=today),
-            "last_3_years": Q(created_at__gte=(today - relativedelta(years=3)), created_at__lte=today),
-            "last_5_years": Q(created_at__gte=(today - relativedelta(years=5)), created_at__lte=today)
-        }
-        for span, query in temp.items():
-            analytics_result[span] = ExpenditureModel.objects.filter(query).aggregate(t=Sum('amount'))["t"]
-        return Response({"data": analytics_result, "message": "Expenditure analytics fetched successfully"}, status=200)
+        now = timezone.now()
+        if request.data["analytics_type"] == "monthly_data":
+            monthly_analytics = dict(ExpenditureModel.objects
+                                 .filter(user=request.user)
+                                 .values('created_at__month')
+                                 .annotate(month=Func(
+                                     F('created_at__date'), 
+                                     function="TO_CHAR", template="TO_CHAR(%(expressions)s, 'Mon')"), 
+                                     month_total=Cast(Sum('amount'), output_field=FloatField()))
+                                 .values_list('month', 'month_total')
+                                )
+            for mon in MONTH_NAMES:
+                month_total = 0
+                if mon in monthly_analytics:
+                    month_total = monthly_analytics[mon]
+                graph_data.append({"x": mon, "y": month_total})
 
+        return Response({"data": graph_data, "message": "Expenditure analytics fetched successfully"}, status=200)
 
 
 ######################################## Expenditure Category ###########################################

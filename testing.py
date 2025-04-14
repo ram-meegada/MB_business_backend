@@ -13,32 +13,34 @@ def main():
     from django.utils import timezone
     from dateutil.relativedelta import relativedelta
     from datetime import datetime
-    from django.db.models import Sum, Q
+    from django.db.models import Sum, Q, F, Func, FloatField
+    from django.db.models.functions import Cast
     import json
     from django.db import reset_queries, connection
 
     reset_queries()
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    now = timezone.now()
-    present_month_first_day = now.replace(day=1)
-    Q1 = Q(created_at__gte=present_month_first_day.date(), created_at__lte=now.date())
-    total_expenditure = 0
-    t = dict(ExpenditureModel.objects.filter(Q1)
-         .values('category__parent')
-         .annotate(tot=Sum('amount'))
-         .values_list('category__parent__short_name', 'tot')
-        )
+    Xaxis_labels, Yaxis_values = [], []
 
-    for v in t.values():
-        total_expenditure += v
+    exp = dict(ExpenditureModel.objects
+           .values("created_at__month")
+           .annotate(month=Func(
+               F('created_at__date'), function="TO_CHAR", template="TO_CHAR(%(expressions)s, 'Mon')"),
+               total=Cast(Sum('amount'), output_field=FloatField()))
+           .values_list('month', 'total'))
+    
+    for mon in month_names:
+        value = 0
+        if mon in exp:
+            value = exp[mon]
+        Xaxis_labels.append(mon)
+        Yaxis_values.append(value)
 
-    t = {k: float(v) for k, v in t.items()}
-
-    print(t, '===================')
-
-    print(total_expenditure, '-----------')
-
+    print(Xaxis_labels, '======')
+    print(Yaxis_values, '===yyy===')
     print(len(connection.queries), '==queries===')
+
 
 if __name__ == "__main__":
     main()
