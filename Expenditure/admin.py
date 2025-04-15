@@ -5,7 +5,15 @@ from django.shortcuts import render
 
 
 class ExpenditureAdmin(admin.ModelAdmin):
-    list_display = ["id", "amount", "category", "created_at"]
+    list_display = ["id", "amount", "main_category", "sub_category", "created_at"]
+
+    @admin.display(empty_value="NA")
+    def main_category(self, obj):
+        return obj.category.parent.name
+
+    @admin.display(empty_value="NA")
+    def sub_category(self, obj):
+        return obj.category.name
 
 
 class ParentCategoryFilter(admin.SimpleListFilter):

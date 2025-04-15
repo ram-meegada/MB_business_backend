@@ -6,7 +6,7 @@ from utils.messages import *
 from .serializer import *
 from utils.commonUtils import fetch_serializer_error
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q, Sum, Func, F, FloatField
 from django.db.models.functions import Cast
@@ -69,9 +69,14 @@ class ExpenditureAnalyticsView(APIView):
         Gives month wise expenditure
     '''
     def post(self, request):
-        graph_data = []
-
         now = timezone.now()
+        graph_data = {
+                        "bar_chart_data": [], 
+                        "metadata": {
+                            "default_hover": datetime.strftime(now, "%b")
+                        }
+                    }
+
         if request.data["analytics_type"] == "monthly_data":
             monthly_analytics = dict(ExpenditureModel.objects
                                  .filter(user=request.user)
@@ -82,11 +87,12 @@ class ExpenditureAnalyticsView(APIView):
                                      month_total=Cast(Sum('amount'), output_field=FloatField()))
                                  .values_list('month', 'month_total')
                                 )
+ 
             for mon in MONTH_NAMES:
                 month_total = 0
                 if mon in monthly_analytics:
                     month_total = monthly_analytics[mon]
-                graph_data.append({"x": mon, "y": month_total})
+                graph_data["bar_chart_data"].append({"x": mon, "y": month_total})
 
         return Response({"data": graph_data, "message": "Expenditure analytics fetched successfully"}, status=200)
 

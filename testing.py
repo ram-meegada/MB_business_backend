@@ -19,27 +19,30 @@ def main():
     from django.db import reset_queries, connection
 
     reset_queries()
-    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    Xaxis_labels, Yaxis_values = [], []
+    categories = list(ExpenditureCategoryModel.objects.filter(parent=None).values_list('name', flat=True))
 
     exp = dict(ExpenditureModel.objects
-           .values("created_at__month")
-           .annotate(month=Func(
-               F('created_at__date'), function="TO_CHAR", template="TO_CHAR(%(expressions)s, 'Mon')"),
-               total=Cast(Sum('amount'), output_field=FloatField()))
-           .values_list('month', 'total'))
-    
-    for mon in month_names:
-        value = 0
-        if mon in exp:
-            value = exp[mon]
-        Xaxis_labels.append(mon)
-        Yaxis_values.append(value)
+           .filter(created_at__month=timezone.now().month)
+           .values('category__parent')
+           .annotate(am=Cast(Sum('amount'), output_field=FloatField()))
+           .values_list('category__parent__name', 'am')
+           )
+    res = []
+    print(categories, '==========categories==============')
 
-    print(Xaxis_labels, '======')
-    print(Yaxis_values, '===yyy===')
-    print(len(connection.queries), '==queries===')
+    colors = ['#FFC107', '#03A9F4', '#4CAF50', '#E91E63','#9C27B0', '#FF5722','#795548', '#009688','#607D8B', '#8BC34A', 'pink']
+    x = 0
+    for i in categories:
+        print(x, '=========')
+        if i in exp:
+            res.append({ "name": i, "amount": exp[i], "color": colors[x], "legendFontColor": "#7F7F7F", "legendFontSize": 12 })
+        else:
+            res.append({ "name": i, "amount": 0, "color": colors[x], "legendFontColor": "#7F7F7F", "legendFontSize": 12 })
+
+        x += 1
+
+    print(res)
 
 
 if __name__ == "__main__":
