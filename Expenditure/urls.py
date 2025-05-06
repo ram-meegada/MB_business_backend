@@ -9,5 +9,5 @@ urlpatterns = [
 
 
     #Category views
-    path('category/', ExpenditureCategoryView.as_view())
+    path('category/', ExpenditureCategoryView.as_view()),
 ]

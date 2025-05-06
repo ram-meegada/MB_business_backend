@@ -19,32 +19,34 @@ def main():
     from django.db import reset_queries, connection
 
     reset_queries()
+    z = []
+    res = ExpenditureCategoryModel.objects.filter(parent=None)
+    for i in res:
+        temp = {"parent": i.name}
+        temp["children"] = list(ExpenditureCategoryModel.objects.filter(parent=i).values_list('name', flat=True))
+        z.append(temp)
+    
+    print(z)
 
-    categories = list(ExpenditureCategoryModel.objects.filter(parent=None).values_list('name', flat=True))
+def test():
+    from requests.adapters import HTTPAdapter
+    from requests.sessions import Session
+    import requests
 
-    exp = dict(ExpenditureModel.objects
-           .filter(created_at__month=timezone.now().month)
-           .values('category__parent')
-           .annotate(am=Cast(Sum('amount'), output_field=FloatField()))
-           .values_list('category__parent__name', 'am')
-           )
-    res = []
-    print(categories, '==========categories==============')
+    class LoggingAdapter(HTTPAdapter):
+        def send(self, request, **kwargs):
+            print(f"📡 Sending request to {request.url}")
+            return super().send(request, **kwargs)
 
-    colors = ['#FFC107', '#03A9F4', '#4CAF50', '#E91E63','#9C27B0', '#FF5722','#795548', '#009688','#607D8B', '#8BC34A', 'pink']
-    x = 0
-    for i in categories:
-        print(x, '=========')
-        if i in exp:
-            res.append({ "name": i, "amount": exp[i], "color": colors[x], "legendFontColor": "#7F7F7F", "legendFontSize": 12 })
-        else:
-            res.append({ "name": i, "amount": 0, "color": colors[x], "legendFontColor": "#7F7F7F", "legendFontSize": 12 })
+    print("\n=== Modern Session Logging ===")
+    session = Session()
+    session.mount("https://", LoggingAdapter())
 
-        x += 1
-
-    print(res)
+    for i in range(3):
+        res = session.get("https://httpbin.org/get")
+        print(f"[Request {i+1}] Status: {res.status_code}")
 
 
 if __name__ == "__main__":
-    main()
+    test()
     pass

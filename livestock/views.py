@@ -4,9 +4,11 @@ from rest_framework.response import Response
 from utils.messages import *
 from livestock.models import LiveStockModel
 from utils.commonUtils import fetch_serializer_error
+from rest_framework.permissions import IsAdminUser
 
 
 class AddLiveStockView(APIView):
+    permission_classes = [IsAdminUser]
     def post(self, request):
         serializer = WriteLiveStockSerializer(
             data=request.data, context={"request": request})
@@ -17,6 +19,7 @@ class AddLiveStockView(APIView):
 
 
 class ListLiveStockView(APIView):
+    permission_classes = [IsAdminUser]
     def get(self, request):
         try:
             stock_list = LiveStockModel.objects.filter(is_deleted=False, user=request.user)
@@ -27,6 +30,7 @@ class ListLiveStockView(APIView):
 
 
 class GetLiveStockById(APIView):
+    permission_classes = [IsAdminUser]
     def get_live_stock(self, id):
         self.live_stock = LiveStockModel.objects.filter(id=id).first()
 

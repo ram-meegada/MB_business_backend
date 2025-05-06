@@ -26,8 +26,7 @@ SECRET_KEY = 'django-insecure-04*fp#rg&n)g+q)$(_d4-looswhd3f6iyv%i1$bj0@fcdj7@)w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.14"]
-
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2"]
 
 # Application definition
 
@@ -39,11 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.messages',
 
+    'django_extensions',
+
     'rest_framework',
 
     'authentication',
     'livestock',
-    'Expenditure'
+    'Expenditure',
+    'CustomersApp'
+
 ]
 
 MIDDLEWARE = [
@@ -224,6 +227,22 @@ LOGGING = {
             "backupCount": BACKUP_COUNT,
             "formatter": "verbose",
         },
+        "expenditure_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "expenditure.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
+        },
+        "customers_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "customers.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django": {
@@ -235,14 +254,24 @@ LOGGING = {
             "level": "ERROR",
             "propagate": False,
         },
+        "Common": {
+            "handlers": ["common_handler"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "Authentication": {
             "handlers": ["auth_handler"],
             "level": "DEBUG",
             "propagate": False,
         },
-        "Common": {
-            "handlers": ["common_handler"],
-            "level": "INFO",
+        "Expenditure": {
+            "handlers": ["expenditure_handler"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "Customers": {
+            "handlers": ["customers_handler"],
+            "level": "DEBUG",
             "propagate": False,
         },
     },

@@ -25,6 +25,7 @@ urlpatterns = [
     path('live-stock/', include("livestock.urls")),
     path('user/auth/', include("authentication.urls")),
     path('expenditure/', include("Expenditure.urls")),
+    path('customers/', include("CustomersApp.urls")),
 ]
 
 if settings.DEBUG:

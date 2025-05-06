@@ -1,3 +1,4 @@
+from django.db import models
 from django.core.mail import send_mail
 import logging
 from django.utils import timezone
@@ -5,6 +6,16 @@ from datetime import timedelta, datetime
 
 
 logger = logging.getLogger("Common")
+
+
+class BaseModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
 
 
 def fetch_serializer_error(serializer_errors: dict) -> str:

@@ -1,5 +1,6 @@
 from django.db import models
-from authentication.models import UserModel, BaseModel
+from authentication.models import UserModel
+from utils.commonUtils import BaseModel
 
 
 class ExpenditureCategoryModel(BaseModel):

@@ -9,4 +9,15 @@ class LiveStockModelAdmin(admin.ModelAdmin):
     def milk_capacity_display(self, obj):
         return str(obj.milk_capacity) + ' L'
 
+
+class ProductModelAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_at', 'is_active']
+
+
+class AnimalModelAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_at', 'is_active']
+
+
 admin.site.register(LiveStockModel, LiveStockModelAdmin)
+admin.site.register(ProductsModel, ProductModelAdmin)
+admin.site.register(AnimalModel, AnimalModelAdmin)

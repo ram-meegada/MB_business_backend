@@ -46,3 +46,23 @@ class LiveStockModel(BaseModel):
     class Meta:
         db_table = "Live Stock Table"
         ordering = ['-created_at']
+
+
+
+class ProductsModel(BaseModel):
+    UNIT_CHOICES = [
+        ('gm', 'grams'),
+        ('lt', 'litres')
+    ]
+    name = models.CharField(max_length=20, unique=True)
+    unit = models.CharField(max_length=10, choices=UNIT_CHOICES)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class AnimalModel(BaseModel):
+    name = models.CharField(max_length=20, unique=True)
+
+    def __str__(self):
+        return str(self.name)
