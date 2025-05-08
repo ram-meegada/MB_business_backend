@@ -15,3 +15,11 @@ class IsDeliveryAgent(BasePermission):
     """
     def has_permission(self, request, view):
         return request.user.role == 3
+
+
+class IsDeliveryAgentOrAdmin(BasePermission):
+    """
+    Custom permission to only allow delivery agents or admin to access the view.
+    """
+    def has_permission(self, request, view):
+        return request.user.role in {1, 3}

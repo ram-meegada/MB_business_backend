@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from authentication.models import UserModel
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
+from authentication.serializer import UserDetailsSerializer
 
 
 class LoginView(APIView):
@@ -19,6 +20,9 @@ class LoginView(APIView):
             request.data["password"], user.password)
         if password_verification:
             access_token = RefreshToken.for_user(user).access_token
-            return Response({"data": str(access_token), "message": "Login successful"}, status=200)
+            serializer = UserDetailsSerializer(user)
+            data = serializer.data
+            data["access_token"] = str(access_token)
+            return Response({"data": data, "message": "Login successful"}, status=200)
         else:
             return Response({"data": None, "message": "Incorrect password"}, status=400)

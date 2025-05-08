@@ -14,7 +14,6 @@ class UserModel(AbstractBaseUser, PermissionsMixin, BaseModel):
     phone_num = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
     name = models.CharField(max_length=100)
-    password = models.TextField()
     is_staff = models.BooleanField(default=False)
     role = models.IntegerField(choices=ROLE_CHOICES, blank=True, null=True)
 
