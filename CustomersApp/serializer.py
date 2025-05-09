@@ -26,6 +26,7 @@ class SubscriptionDetailsSerializer(serializers.ModelSerializer):
 class CustomersListSerializer(serializers.ModelSerializer):
     delivery_agent = UserDetailsSerializer()
     subscription = SubscriptionDetailsSerializer()
+    user = UserDetailsSerializer()
     class Meta:
         model = CustomerSubscriptionModel
-        fields = ['id', 'subscription', 'price_at_subscription', 'start_date', 'end_date', 'delivery_schedule', 'delivery_agent']
+        fields = ['id', 'user', 'subscription', 'price_at_subscription', 'start_date', 'end_date', 'delivery_schedule', 'delivery_agent']
