@@ -14,10 +14,26 @@ class CustomersListView(APIView):
     permission_classes = [IsDeliveryAgentOrAdmin]
     def get(self, request):
         try:
-            customers_list = CustomerSubscriptionModel.objects.all()
+            customers_list = CustomerSubscriptionModel.objects.filter(is_active=True)
             serializer = CustomersListSerializer(customers_list, many=True)
             return Response({"data": serializer.data, "message": "All customer details"}, status=200)
         except Exception as err:
             customers_logger.error(str(err))
             return Response({"data": None, "message": "Something went wrong"}, status=500)
 
+
+############## Subscription ###################
+
+class SubscriptionListForDropDownView(APIView):
+    def get(self, request):
+        data = []
+        try:
+            subscriptions = SubscriptionPlanModel.objects.filter(is_active=True)
+
+            for subs in subscriptions:
+                data.append({"id": subs.id, "label": str(subs), "value": str(subs)})
+
+            return Response({"data": data, "message": "All Subscriptions"}, status=200)
+        except Exception as err:
+            customers_logger.error(str(err))
+            return Response({"data": None, "message": "Something went wrong"}, status=500)

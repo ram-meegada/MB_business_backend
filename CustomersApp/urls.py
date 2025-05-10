@@ -3,5 +3,10 @@ from CustomersApp.views import *
 
 
 urlpatterns = [
-    path('all/', CustomersListView.as_view())
+    #Customers
+    path('all/', CustomersListView.as_view()),
+
+    #Subscriptions
+    path('subscriptions/all/', SubscriptionListForDropDownView.as_view()),
+
 ]

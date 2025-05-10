@@ -19,7 +19,7 @@ class SubscriptionPlanModel(BaseModel):
     quantity = models.IntegerField(choices=QUANTITY_CHOICES)
 
     def __str__(self):
-        return f"{self.animal.name} + {self.product.name} + {quantity_verbose(self.product, self.quantity)} + {self.price}/-"
+        return f"{self.animal.name} {self.product.name} {quantity_verbose(self.product, self.quantity)} at {self.price}/-"
 
     class Meta:
         db_table = "subscriptions"
