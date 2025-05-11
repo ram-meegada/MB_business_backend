@@ -9,4 +9,7 @@ urlpatterns = [
     #Subscriptions
     path('subscriptions/all/', SubscriptionListForDropDownView.as_view()),
 
+    #List all delivery agents
+    path('delivery-agents/all/', DeliveryAgentsDropDownView.as_view()),
+
 ]
