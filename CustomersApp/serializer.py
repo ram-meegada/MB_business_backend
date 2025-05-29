@@ -23,10 +23,17 @@ class SubscriptionDetailsSerializer(serializers.ModelSerializer):
             return ""
 
 
-class CustomersListSerializer(serializers.ModelSerializer):
+class CustomerBaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerSubscriptionModel
+        fields = ['id', 'user', 'subscription', 'start_date', 'end_date', 'delivery_schedule', 'delivery_agent']
+
+
+class CustomersListSerializer(CustomerBaseSerializer):
     delivery_agent = UserDetailsSerializer()
     subscription = SubscriptionDetailsSerializer()
     user = UserDetailsSerializer()
-    class Meta:
-        model = CustomerSubscriptionModel
-        fields = ['id', 'user', 'subscription', 'price_at_subscription', 'start_date', 'end_date', 'delivery_schedule', 'delivery_agent']
+
+class CustomersWriteSerializer(CustomerBaseSerializer):
+    pass
+

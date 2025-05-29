@@ -9,6 +9,7 @@ import logging
 
 customers_logger = logging.getLogger("Customers")
 
+####################### Customer ##############################
 
 class CustomersListView(APIView):
     '''
@@ -44,6 +45,38 @@ class DeliveryAgentsDropDownView(APIView):
         except Exception as err:
             customers_logger.error(str(err))
             return Response({"data": None, "message": "Something went wrong"}, status=500)
+        
+
+class CheckUsernameUniquenessView(APIView):
+    def post(self, request):
+        username = request.data.get("username")
+
+        if not username:
+            return Response({"data": None, "message": "Username is required"}, status=400)
+        
+        username_exists = UserModel.objects.filter(username=username).exists()
+
+        if username_exists:
+            return Response({"data": None, "message": "Username not available"}, status=400)
+        else:
+            return Response({"data": None, "message": "Username is available"}, status=200)
+        
+
+class AddCustomerView(APIView):
+    permission_classes = [IsDeliveryAgentOrAdmin]
+    def post(self, request):
+        try:
+            user = UserModel.objects.create(username=request.data["username"], name=request.data["username"], role=2)
+            request.data["user"] = user
+
+            serializer = CustomersWriteSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"data": None, "message": "Customer added successfully"}, status=200)
+            else:
+                return Response({"data": serializer.errors, "message": "Something went wrong"}, status=400)
+        except Exception as err:
+            return Response({"data": str(err), "message": "Something went wrong"}, status=400)
 
 
 ############## Subscription ###################

@@ -28,7 +28,6 @@ class SubscriptionPlanModel(BaseModel):
 class CustomerSubscriptionModel(BaseModel):
     user = models.ForeignKey(UserModel, on_delete=models.SET_NULL, null=True, verbose_name="User")
     subscription = models.ForeignKey(SubscriptionPlanModel, on_delete=models.SET_NULL, verbose_name="Subscription", blank=True, null=True)
-    price_at_subscription = models.FloatField(verbose_name="Price After Subscription")
     start_date = models.DateField(verbose_name="Start Date")
     end_date = models.DateField(verbose_name="End Date", blank=True, null=True)
     delivery_schedule = models.JSONField(verbose_name="Delivery Schedule", default=dict)
@@ -53,3 +52,4 @@ class OrdersModel(BaseModel):
     schedule_date = models.DateField()
     is_morning_delivery = models.BooleanField(default=True)
     subscription = models.ForeignKey(CustomerSubscriptionModel, on_delete=models.SET_NULL, verbose_name="Subscription", blank=True, null=True)
+    price_at_order = models.FloatField(verbose_name="Price at order")
