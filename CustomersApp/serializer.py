@@ -26,13 +26,14 @@ class SubscriptionDetailsSerializer(serializers.ModelSerializer):
 class CustomerBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerSubscriptionModel
-        fields = ['id', 'user', 'subscription', 'start_date', 'end_date', 'delivery_schedule', 'delivery_agent']
+        fields = ['id', 'user', 'subscription', 'start_date', 'delivery_schedule', 'delivery_agent']
 
 
 class CustomersListSerializer(CustomerBaseSerializer):
     delivery_agent = UserDetailsSerializer()
     subscription = SubscriptionDetailsSerializer()
     user = UserDetailsSerializer()
+
 
 class CustomersWriteSerializer(CustomerBaseSerializer):
     pass

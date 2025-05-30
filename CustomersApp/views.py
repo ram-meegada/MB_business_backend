@@ -5,6 +5,8 @@ from CustomersApp.models import *
 from CustomersApp.serializer import *
 from rest_framework.response import Response
 import logging
+from django.db.utils import IntegrityError
+from django.db import transaction
 
 
 customers_logger = logging.getLogger("Customers")
@@ -65,18 +67,14 @@ class CheckUsernameUniquenessView(APIView):
 class AddCustomerView(APIView):
     permission_classes = [IsDeliveryAgentOrAdmin]
     def post(self, request):
-        try:
+        with transaction.atomic():
             user = UserModel.objects.create(username=request.data["username"], name=request.data["username"], role=2)
-            request.data["user"] = user
+            request.data["user"] = user.pk
 
             serializer = CustomersWriteSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({"data": None, "message": "Customer added successfully"}, status=200)
-            else:
-                return Response({"data": serializer.errors, "message": "Something went wrong"}, status=400)
-        except Exception as err:
-            return Response({"data": str(err), "message": "Something went wrong"}, status=400)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({"data": None, "message": "Customer added successfully"}, status=200)
 
 
 ############## Subscription ###################

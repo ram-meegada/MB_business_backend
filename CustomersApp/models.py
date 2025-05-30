@@ -32,6 +32,7 @@ class CustomerSubscriptionModel(BaseModel):
     end_date = models.DateField(verbose_name="End Date", blank=True, null=True)
     delivery_schedule = models.JSONField(verbose_name="Delivery Schedule", default=dict)
     delivery_agent = models.ForeignKey(UserModel, on_delete=models.SET_NULL, null=True, blank=True, related_name='deliveryAgent')
+    is_paused = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
