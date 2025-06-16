@@ -25,11 +25,11 @@ class QueriesCounterMiddleware:
         if not self.request.path.startswith('/admin/'):
             queries_count = connection.queries
 
-            if len(queries_count) > 5:
+            if len(queries_count) > 5 and settings.SEND_MAIL_OVER_QUERIES:
                 common_logger.warning(f"Queries Count exceeded:- {len(queries_count)}, Path:- {self.request.path}, sending mail........")
                 Thread(
                     target=send_simple_mail, 
                     args=("Queries Count", f"Queries count exceeded threshold for path:- {self.request.path}\nCount:- {len(queries_count)}", [settings.PRIMARY_MAIL])
                 ).start()
-            else:
-                common_logger.info(f"Queries Count:- {len(queries_count)}, Path:- {self.request.path}")
+
+            # common_logger.info(f"Queries Count:- {len(queries_count)}, Path:- {self.request.path}")

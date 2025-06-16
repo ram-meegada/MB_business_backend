@@ -13,5 +13,4 @@ urlpatterns = [
 
     #List all delivery agents
     path('delivery-agents/all/', DeliveryAgentsDropDownView.as_view()),
-
 ]

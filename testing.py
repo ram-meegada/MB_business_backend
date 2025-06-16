@@ -28,25 +28,49 @@ def main():
     
     print(z)
 
-def test():
-    from requests.adapters import HTTPAdapter
-    from requests.sessions import Session
-    import requests
 
-    class LoggingAdapter(HTTPAdapter):
-        def send(self, request, **kwargs):
-            print(f"📡 Sending request to {request.url}")
-            return super().send(request, **kwargs)
+def run_crons():
+    from CustomersApp.tasks import create_orders_for_the_day, generate_monthly_payments
 
-    print("\n=== Modern Session Logging ===")
-    session = Session()
-    session.mount("https://", LoggingAdapter())
+    # create_orders_for_the_day()
+    generate_monthly_payments()
 
-    for i in range(3):
-        res = session.get("https://httpbin.org/get")
-        print(f"[Request {i+1}] Status: {res.status_code}")
+
+def data_migration_for_may_orders():
+    from CustomersApp.models import CustomerSubscriptionModel, OrdersModel
+    from datetime import date, timedelta
+    from django.db.models import Q
+    import ipdb
+
+    today = date.today()
+    start_date = today.replace(month=5, day=1)
+    order_objs = []
+
+    for _ in range(31):
+        for i in range(2):
+            if i == 0:
+                query = Q(subscription__schedule__in=[1, 3])
+            elif i == 1:
+                query = Q(subscription__schedule__in=[2, 3])
+            
+            subscriptions = CustomerSubscriptionModel.objects.filter(query)
+
+            for cus_sub in subscriptions:
+                ord_obj = OrdersModel(status="delivered",
+                                        is_morning_delivery=True if i == 0 else False, 
+                                        customer=cus_sub,
+                                        price_at_order=cus_sub.subscription.price if i == 0 else cus_sub.subscription.evening_price,
+                                        schedule_date=start_date
+                                        )
+                order_objs.append(ord_obj)
+
+        start_date += timedelta(days=1)
+
+    if order_objs:
+        OrdersModel.objects.bulk_create(order_objs)
 
 
 if __name__ == "__main__":
-    test()
+    run_crons()
+    # data_migration_for_may_orders()
     pass

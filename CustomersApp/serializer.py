@@ -37,4 +37,3 @@ class CustomersListSerializer(CustomerBaseSerializer):
 
 class CustomersWriteSerializer(CustomerBaseSerializer):
     pass
-

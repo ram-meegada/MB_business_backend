@@ -7,6 +7,7 @@ from rest_framework.response import Response
 import logging
 from django.db.utils import IntegrityError
 from django.db import transaction
+from utils.commonUtils import fetch_serializer_error
 
 
 customers_logger = logging.getLogger("Customers")
@@ -22,7 +23,8 @@ class CustomersListView(APIView):
         try:
             customers_list = (CustomerSubscriptionModel.objects
                               .filter(is_active=True)
-                              .select_related('user', 'subscription', 'delivery_agent', 'subscription__product', 'subscription__animal'))
+                              .select_related('user', 'subscription', 'delivery_agent', 'subscription__product', 'subscription__animal')
+                              .order_by('-created_at'))
             serializer = CustomersListSerializer(customers_list, many=True)
             return Response({"data": serializer.data, "message": "All customer details"}, status=200)
         except Exception as err:
@@ -41,7 +43,7 @@ class DeliveryAgentsDropDownView(APIView):
             active_delivery_agents = UserModel.objects.filter(role=3, is_active=True)
 
             for adg in active_delivery_agents:
-                data.append({"id": adg.id, "label": adg.username, "value": adg.username})
+                data.append({"id": adg.pk, "label": adg.username, "value": adg.username})
 
             return Response({"data": data, "message": "All Delivery agents"}, status=200)
         except Exception as err:
@@ -67,14 +69,27 @@ class CheckUsernameUniquenessView(APIView):
 class AddCustomerView(APIView):
     permission_classes = [IsDeliveryAgentOrAdmin]
     def post(self, request):
-        with transaction.atomic():
-            user = UserModel.objects.create(username=request.data["username"], name=request.data["username"], role=2)
-            request.data["user"] = user.pk
 
-            serializer = CustomersWriteSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+        if UserModel.objects.filter(username=request.data["username"]).exists():
+            return Response({"data": None, "message": "Username already taken"}, status=400)
+
+        user = UserModel.objects.create(username=request.data["username"], name=request.data["name"], role=2)
+        request.data["user"] = user.pk
+
+        subscription = SubscriptionPlanModel.objects.select_related('animal', 'product').get(pk=request.data["subscription"])
+
+        request.data['delivery_schedule'] = {
+                "morning": subscription.quantity if request.data["delivery_schedule"] in ["Morning Only", "Both"] else None,
+                "evening": subscription.quantity if request.data["delivery_schedule"] in ["Evening only", "Both"] else None
+            }
+
+        serializer = CustomersWriteSerializer(data=request.data)
+        if serializer.is_valid():
             serializer.save()
-            return Response({"data": None, "message": "Customer added successfully"}, status=200)
+        else:
+            error = fetch_serializer_error(serializer.errors)
+            return Response({"data": None, "message": error}, status=400)
+        return Response({"data": None, "message": "Customer added successfully"}, status=200)
 
 
 ############## Subscription ###################
@@ -86,7 +101,7 @@ class SubscriptionListForDropDownView(APIView):
     def get(self, request):
         data = []
         try:
-            subscriptions = SubscriptionPlanModel.objects.filter(is_active=True)
+            subscriptions = SubscriptionPlanModel.objects.filter(is_active=True).select_related('product', 'animal')
 
             for subs in subscriptions:
                 data.append({"id": subs.id, "label": str(subs), "value": str(subs)})

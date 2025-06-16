@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-04*fp#rg&n)g+q)$(_d4-looswhd3f6iyv%i1$bj0@fcdj7@)w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.7"]
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2"]
 
 # Application definition
 
@@ -39,9 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
 
     'django_extensions',
+    'django_celery_beat',
 
     'rest_framework',
 
+    #Apps
     'authentication',
     'livestock',
     'Expenditure',
@@ -178,6 +180,14 @@ LOGS_PATH = os.path.join(BASE_DIR, 'logs')
 FILE_SIZE = 1024 * 1024 * 5  # 5 MB
 BACKUP_COUNT = 2
 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # or RabbitMQ if preferred
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+PRIMARY_MAIL = config('PRIMARY_MAIL')
+
+SEND_MAIL_OVER_QUERIES = False
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -276,5 +286,3 @@ LOGGING = {
         },
     },
 }
-
-PRIMARY_MAIL = config('PRIMARY_MAIL')
