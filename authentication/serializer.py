@@ -4,4 +4,4 @@ from authentication.models import UserModel
 class UserDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ['id', 'username', 'name', 'email', 'role']
+        fields = ['id', 'username', 'name', 'role']

@@ -13,4 +13,7 @@ urlpatterns = [
 
     #List all delivery agents
     path('delivery-agents/all/', DeliveryAgentsDropDownView.as_view()),
+
+    #Payments
+    path('payments/', AllPaymentsView.as_view()),
 ]

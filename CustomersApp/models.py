@@ -30,7 +30,12 @@ class SubscriptionPlanModel(BaseModel):
     schedule = models.IntegerField(choices=SCHEDULE_CHOICES, default=1)
 
     def __str__(self):
-        return str(self.pk)
+        if self.schedule == 1:
+            return f"{quantity_verbose(self.product, self.quantity)} {self.animal} {self.product} at {self.price}/-"
+        elif self.schedule == 2:
+            return f"{quantity_verbose(self.product, self.evening_quantity)} {self.animal} {self.product} at {self.evening_price}/-"
+        elif self.schedule == 3:
+            return f"Morning {quantity_verbose(self.product, self.quantity)} {self.animal} {self.product} at {self.price}/- and Evening {quantity_verbose(self.product, self.evening_quantity)} {self.animal} {self.product} at {self.evening_price}/-"
 
     class Meta:
         db_table = "subscriptions"

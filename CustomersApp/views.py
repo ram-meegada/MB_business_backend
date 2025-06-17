@@ -8,6 +8,8 @@ import logging
 from django.db.utils import IntegrityError
 from django.db import transaction
 from utils.commonUtils import fetch_serializer_error
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 
 customers_logger = logging.getLogger("Customers")
@@ -76,13 +78,6 @@ class AddCustomerView(APIView):
         user = UserModel.objects.create(username=request.data["username"], name=request.data["name"], role=2)
         request.data["user"] = user.pk
 
-        subscription = SubscriptionPlanModel.objects.select_related('animal', 'product').get(pk=request.data["subscription"])
-
-        request.data['delivery_schedule'] = {
-                "morning": subscription.quantity if request.data["delivery_schedule"] in ["Morning Only", "Both"] else None,
-                "evening": subscription.quantity if request.data["delivery_schedule"] in ["Evening only", "Both"] else None
-            }
-
         serializer = CustomersWriteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -92,7 +87,7 @@ class AddCustomerView(APIView):
         return Response({"data": None, "message": "Customer added successfully"}, status=200)
 
 
-############## Subscription ###################
+########################### Subscription #######################
 
 class SubscriptionListForDropDownView(APIView):
     '''
@@ -100,13 +95,37 @@ class SubscriptionListForDropDownView(APIView):
     '''
     def get(self, request):
         data = []
+        headers = ["Morning Only", "Evening Only", "Both morning and evening"]
         try:
             subscriptions = SubscriptionPlanModel.objects.filter(is_active=True).select_related('product', 'animal')
 
-            for subs in subscriptions:
-                data.append({"id": subs.id, "label": str(subs), "value": str(subs)})
+            for index, i in enumerate(headers):
+                data.append({"id": 0, "label": i, "value": i, "isHeader": True})
+                subs = subscriptions.filter(schedule=index + 1)
+                for j in subs:
+                    data.append({"id": j.pk, "label": str(j), "value": str(j)})
 
             return Response({"data": data, "message": "All Subscriptions"}, status=200)
         except Exception as err:
             customers_logger.error(str(err))
             return Response({"data": None, "message": "Something went wrong"}, status=500)
+
+
+########################## Payments ###########################
+
+class AllPaymentsView(APIView):
+    '''
+        Lists all payments by month. Default will be last month payments
+    '''
+    def get(self, request):
+        now = timezone.now()
+        one_month_back = now - relativedelta(months=1)
+
+        year = one_month_back.year
+        month = one_month_back.month
+        
+        payments = MonthlyPaymentModel.objects.filter(month__month=month, month__year=year).select_related('customer')
+
+        serilaizer = PaymentsListingSerializer(payments, many=True)
+
+        return Response({"data": serilaizer.data, "message": "All Payments"}, status=200)

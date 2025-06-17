@@ -48,9 +48,10 @@ def create_orders_for_the_day(self):
 def generate_monthly_payments(self):
     try:
         today = timezone.localtime(timezone.now())
+        today = today - relativedelta(months=1)
+
         year = today.year
-        # month = today.month
-        month = (today - relativedelta(months=1)).month
+        month = today.month
         payments_month = date(year, month, 1)
 
         already_created_cus_payments = MonthlyPaymentModel.objects.filter(month=payments_month).values_list('customer')

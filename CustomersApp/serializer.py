@@ -26,14 +26,26 @@ class SubscriptionDetailsSerializer(serializers.ModelSerializer):
 class CustomerBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerSubscriptionModel
-        fields = ['id', 'user', 'subscription', 'start_date', 'delivery_schedule', 'delivery_agent']
-
+        fields = ['id', 'user', 'subscription', 'start_date', 'delivery_agent']
+    def get_subscription(self, obj):
+        try:
+            return str(obj.subscription)
+        except:
+            pass
 
 class CustomersListSerializer(CustomerBaseSerializer):
     delivery_agent = UserDetailsSerializer()
-    subscription = SubscriptionDetailsSerializer()
+    subscription = serializers.SerializerMethodField()
     user = UserDetailsSerializer()
 
 
 class CustomersWriteSerializer(CustomerBaseSerializer):
     pass
+
+
+############### Payments ###################
+
+class PaymentsListingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MonthlyPaymentModel
+        fields = ['id', 'customer', 'month', 'amount_due', 'amount_paid', 'is_paid']
