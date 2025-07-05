@@ -18,8 +18,8 @@ class WriteLiveStockSerializer(serializers.ModelSerializer):
 class LiveStockListSerializer(serializers.ModelSerializer):
     class Meta:
         model = LiveStockModel
-        fields = ['id', 'live_stock_id', 'image_url', 'breed', 'age',
-                  'milk_capacity', 'parity']
+        fields = ['id', 'live_stock_id', 'image_url', 'breed', 'age', 'milk_capacity', 'parity', 'is_pregnant', 'last_calvation_date',
+                  'lactation_month', 'purchase_price', 'parity']
 
 
 class LiveStockByIdSerializer(serializers.ModelSerializer):

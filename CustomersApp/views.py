@@ -10,28 +10,38 @@ from django.db import transaction
 from utils.commonUtils import fetch_serializer_error
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+from django.db.models import Sum
 
 
 customers_logger = logging.getLogger("Customers")
 
-####################### Customer ##############################
+####################### Customers (Admin side) ##############################
 
 class CustomersListView(APIView):
     '''
         This view returns all the active customers
     '''
     permission_classes = [IsDeliveryAgentOrAdmin]
+    SERIALIZER_CLASS = CustomersListSerializer
+
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self, request):
         try:
             customers_list = (CustomerSubscriptionModel.objects
                               .filter(is_active=True)
                               .select_related('user', 'subscription', 'delivery_agent', 'subscription__product', 'subscription__animal')
                               .order_by('-created_at'))
-            serializer = CustomersListSerializer(customers_list, many=True)
+            serializer = self.SERIALIZER_CLASS(customers_list, many=True)
             return Response({"data": serializer.data, "message": "All customer details"}, status=200)
         except Exception as err:
             customers_logger.error(str(err))
             return Response({"data": None, "message": "Something went wrong"}, status=500)
+
+
+class CustomersListViewWeb(CustomersListView):
+    SERIALIZER_CLASS = CustomersListSerializerForWeb
 
 
 class DeliveryAgentsDropDownView(APIView):
@@ -66,6 +76,21 @@ class CheckUsernameUniquenessView(APIView):
             return Response({"data": None, "message": "Username not available"}, status=400)
         else:
             return Response({"data": None, "message": "Username is available"}, status=200)
+
+
+class CustomerByIdView(APIView):
+    def dispatch(self, request, *args, **kwargs):
+        self.data = {}
+        self.message = "Success"
+        self.status = 200
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id):
+        customer = CustomerSubscriptionModel.objects.filter(id=id).first()
+
+        if not customer:
+            return Response({"data": None, "message": "Customer not found"}, status=400)
+
         
 
 class AddCustomerView(APIView):
@@ -123,9 +148,17 @@ class AllPaymentsView(APIView):
 
         year = one_month_back.year
         month = one_month_back.month
-        
-        payments = MonthlyPaymentModel.objects.filter(month__month=month, month__year=year).select_related('customer')
 
-        serilaizer = PaymentsListingSerializer(payments, many=True)
+        queryset = MonthlyPaymentModel.objects.filter(month__month=month, month__year=year)
+        totals = queryset.aggregate(total_due=Sum('amount_due'), total_paid=Sum('amount_paid'))
+        payments = queryset.select_related('customer__user').order_by('-amount_due')
 
-        return Response({"data": serilaizer.data, "message": "All Payments"}, status=200)
+        serializer = PaymentsListingSerializer(payments, many=True)
+        data = {"data": serializer.data}
+        data["total_due"] = totals["total_due"]
+        data["total_paid"] = totals["total_paid"]
+        data["total_payment"] = totals["total_due"] + totals["total_paid"]
+
+        return Response({"data": data, "message": "All Payments"}, status=200)
+
+

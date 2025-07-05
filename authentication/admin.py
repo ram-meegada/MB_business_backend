@@ -17,6 +17,7 @@ class UserForm(forms.ModelForm):
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ['username', 'role', 'phone_num', 'is_superuser']
+    search_fields = ['username', 'name']
     form = UserForm
 
 admin.site.register(UserModel, UserAdmin)

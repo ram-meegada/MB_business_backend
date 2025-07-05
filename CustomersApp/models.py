@@ -3,6 +3,7 @@ from utils.commonUtils import BaseModel
 from livestock.models import ProductsModel, AnimalModel
 from authentication.models import UserModel
 from utils.customersUtils import quantity_verbose
+from django.utils.functional import cached_property
 
 
 class SubscriptionPlanModel(BaseModel):
@@ -31,9 +32,9 @@ class SubscriptionPlanModel(BaseModel):
 
     def __str__(self):
         if self.schedule == 1:
-            return f"{quantity_verbose(self.product, self.quantity)} {self.animal} {self.product} at {self.price}/-"
+            return f"Morning {quantity_verbose(self.product, self.quantity)} {self.animal} {self.product} at {self.price}/-"
         elif self.schedule == 2:
-            return f"{quantity_verbose(self.product, self.evening_quantity)} {self.animal} {self.product} at {self.evening_price}/-"
+            return f"Evening {quantity_verbose(self.product, self.evening_quantity)} {self.animal} {self.product} at {self.evening_price}/-"
         elif self.schedule == 3:
             return f"Morning {quantity_verbose(self.product, self.quantity)} {self.animal} {self.product} at {self.price}/- and Evening {quantity_verbose(self.product, self.evening_quantity)} {self.animal} {self.product} at {self.evening_price}/-"
 
@@ -41,12 +42,18 @@ class SubscriptionPlanModel(BaseModel):
         db_table = "subscriptions"
 
 
+class CustomersManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
 class CustomerSubscriptionModel(BaseModel):
     user = models.ForeignKey(UserModel, on_delete=models.SET_NULL, null=True, verbose_name="User")
     subscription = models.ForeignKey(SubscriptionPlanModel, on_delete=models.SET_NULL, verbose_name="Subscription", blank=True, null=True)
     start_date = models.DateField(verbose_name="Start Date")
     end_date = models.DateField(verbose_name="End Date", blank=True, null=True)
     delivery_agent = models.ForeignKey(UserModel, on_delete=models.SET_NULL, null=True, blank=True, related_name='deliveryAgent')
+
+    objects = CustomersManager()
 
     def __str__(self):
         return str(self.pk)

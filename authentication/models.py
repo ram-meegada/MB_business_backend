@@ -11,6 +11,7 @@ class UserModel(AbstractBaseUser, PermissionsMixin, BaseModel):
     ]
 
     username = models.CharField(max_length=100, unique=True)
+    image = models.ImageField(upload_to='images', blank=True, null=True)
     phone_num = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
     name = models.CharField(max_length=100)

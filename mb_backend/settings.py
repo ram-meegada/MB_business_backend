@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-04*fp#rg&n)g+q)$(_d4-looswhd3f6iyv%i1$bj0@fcdj7@)w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2"]
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2", '192.168.1.23']
 
 # Application definition
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
 
     'rest_framework',
+    'corsheaders',
 
     #Apps
     'authentication',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -84,6 +86,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mb_backend.wsgi.application'
 
+CORS_ALLOWED_ORIGINS = [
+    'http://192.168.1.23:5173',
+    'http://localhost:5173',
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -152,7 +158,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=10)
+    # "REFRESH_TOKEN_LIFETIME": timedelta(days=10)
+    "REFRESH_TOKEN_LIFETIME": timedelta(seconds=10)
 }
 
 AUTH_USER_MODEL = "authentication.UserModel"
@@ -259,11 +266,11 @@ LOGGING = {
             "handlers": ["console"],
             "propagate": True,
         },
-        "django.request": {
-            "handlers": ["mail_admins", "common_handler"],
-            "level": "ERROR",
-            "propagate": False,
-        },
+        # "django.request": {
+        #     "handlers": ["mail_admins", "common_handler"],
+        #     "level": "ERROR",
+        #     "propagate": False,
+        # },
         "Common": {
             "handlers": ["common_handler"],
             "level": "INFO",

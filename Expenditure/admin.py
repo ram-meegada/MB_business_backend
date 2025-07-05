@@ -9,11 +9,17 @@ class ExpenditureAdmin(admin.ModelAdmin):
 
     @admin.display(empty_value="NA")
     def main_category(self, obj):
-        return obj.category.parent.name
+        try:
+            return obj.category.parent.name
+        except:
+            return ""
 
     @admin.display(empty_value="NA")
     def sub_category(self, obj):
-        return obj.category.name
+        try:
+            return obj.category.name
+        except:
+            return ""
 
 
 class ParentCategoryFilter(admin.SimpleListFilter):

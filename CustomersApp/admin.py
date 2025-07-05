@@ -8,7 +8,7 @@ class SubscriptionPlanModelAdmin(admin.ModelAdmin):
 
 
 class CustomerSubscriptionModelAdmin(admin.ModelAdmin):
-    list_display = ['customer_name', 'subscription_description', 'start_date']
+    list_display = ['customer_name', 'subscription_description', 'start_date', 'subscription_schedule']
     search_fields = ['user__name']
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -23,6 +23,10 @@ class CustomerSubscriptionModelAdmin(admin.ModelAdmin):
     @admin.display()
     def subscription_description(self, obj):
         return obj.subscription.description
+
+    @admin.display()
+    def subscription_schedule(self, obj):
+        return obj.subscription.get_schedule_display()
 
 
 @admin.action(description="Mark order status as delivered")
@@ -42,7 +46,7 @@ class OrdersModelAdmin(admin.ModelAdmin):
 
 
 class MonthlyPaymentModelAdmin(admin.ModelAdmin):
-    list_display = ['customer_name', 'payments_month', 'amount_due', 'amount_paid']
+    list_display = ['customer_name', 'payments_month', 'amount_due', 'amount_paid', 'is_paid']
     search_fields = ['customer__user__name']
 
     @admin.display(empty_value="NA")

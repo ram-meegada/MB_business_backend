@@ -24,28 +24,50 @@ class SubscriptionDetailsSerializer(serializers.ModelSerializer):
 
 
 class CustomerBaseSerializer(serializers.ModelSerializer):
+    schedule = serializers.SerializerMethodField()
+    delivery_agent = UserDetailsSerializer()
+    subscription = serializers.SerializerMethodField()
+    user = UserDetailsSerializer()
+
     class Meta:
         model = CustomerSubscriptionModel
-        fields = ['id', 'user', 'subscription', 'start_date', 'delivery_agent']
+        fields = ['id', 'user', 'subscription', 'start_date', 'delivery_agent', 'schedule']
+
     def get_subscription(self, obj):
         try:
             return str(obj.subscription)
         except:
             pass
+    
+    def get_schedule(self, obj):
+        return obj.subscription.get_schedule_display()
+
 
 class CustomersListSerializer(CustomerBaseSerializer):
-    delivery_agent = UserDetailsSerializer()
-    subscription = serializers.SerializerMethodField()
-    user = UserDetailsSerializer()
+    pass
 
 
 class CustomersWriteSerializer(CustomerBaseSerializer):
     pass
 
 
+class CustomersListSerializerForWeb(CustomerBaseSerializer):
+    class Meta:
+        model = CustomerSubscriptionModel
+        fields = ['user', 'subscription', 'start_date', 'delivery_agent', 'schedule']
+
+
 ############### Payments ###################
 
+
 class PaymentsListingSerializer(serializers.ModelSerializer):
+    amount_due = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
+    amount_paid = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
+
+    customer = serializers.SerializerMethodField()
     class Meta:
         model = MonthlyPaymentModel
-        fields = ['id', 'customer', 'month', 'amount_due', 'amount_paid', 'is_paid']
+        fields = ['customer', 'amount_due', 'amount_paid', 'is_paid']
+
+    def get_customer(self, obj):
+        return {'id': obj.customer_id, 'name': obj.customer.user.name}

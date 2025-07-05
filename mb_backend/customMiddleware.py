@@ -22,7 +22,7 @@ class QueriesCounterMiddleware:
         return response
 
     def count_queries(self):
-        if not self.request.path.startswith('/admin/'):
+        # if not self.request.path.startswith('/admin/'):
             queries_count = connection.queries
 
             if len(queries_count) > 5 and settings.SEND_MAIL_OVER_QUERIES:

@@ -36,17 +36,17 @@ def run_crons():
     generate_monthly_payments()
 
 
-def data_migration_for_may_orders():
+def data_migration_for_june_orders():
     from CustomersApp.models import CustomerSubscriptionModel, OrdersModel
     from datetime import date, timedelta
     from django.db.models import Q
     import ipdb
 
     today = date.today()
-    start_date = today.replace(month=5, day=1)
+    start_date = today.replace(month=6, day=1)
     order_objs = []
 
-    for _ in range(31):
+    for _ in range(30):
         for i in range(2):
             if i == 0:
                 query = Q(subscription__schedule__in=[1, 3])
@@ -72,5 +72,5 @@ def data_migration_for_may_orders():
 
 if __name__ == "__main__":
     run_crons()
-    # data_migration_for_may_orders()
+    # data_migration_for_june_orders()
     pass

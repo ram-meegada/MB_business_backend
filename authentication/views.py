@@ -20,9 +20,17 @@ class LoginView(APIView):
             request.data["password"], user.password)
         if password_verification:
             access_token = RefreshToken.for_user(user).access_token
-            serializer = UserDetailsSerializer(user)
-            data = serializer.data
+            data = {}
+            data["id"] = user.pk
+            data["username"] = user.username
+            data["role"] = user.role
             data["access_token"] = str(access_token)
             return Response({"data": data, "message": "Login successful"}, status=200)
         else:
             return Response({"data": None, "message": "Incorrect password"}, status=400)
+
+
+class AdminDetailsByToken(APIView):
+    def get(self, request):
+        serializer = UserDetailsSerializer(request.user)
+        return Response({"data": serializer.data, "message": "Admin details"}, status=200)
