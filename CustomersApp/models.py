@@ -44,7 +44,7 @@ class SubscriptionPlanModel(BaseModel):
 
 class CustomersManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(is_deleted=False)
+        return super().get_queryset().filter(is_deleted=False, is_active=True)
 
 class CustomerSubscriptionModel(BaseModel):
     user = models.ForeignKey(UserModel, on_delete=models.SET_NULL, null=True, verbose_name="User")
@@ -85,13 +85,22 @@ class OrdersModel(BaseModel):
         return str(self.pk)
 
 
+class MonthlyPaymentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset()
+    
+    def pending_payments(self):
+        return self.get_queryset().filter(is_paid=False)
+
 class MonthlyPaymentModel(models.Model):
-    customer = models.ForeignKey(CustomerSubscriptionModel, on_delete=models.SET_NULL, null=True)
+    customer = models.ForeignKey(CustomerSubscriptionModel, on_delete=models.SET_NULL, null=True, related_name='monthly_payments')
     month = models.DateField(help_text="Use any date in the month, e.g. 2025-06-01")
     amount_due = models.DecimalField(max_digits=10, decimal_places=2)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_date = models.DateField(null=True, blank=True)
     is_paid = models.BooleanField(default=False)
+
+    objects = MonthlyPaymentManager()
 
     class Meta:
         constraints = [

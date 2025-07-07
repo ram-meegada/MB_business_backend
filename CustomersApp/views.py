@@ -10,7 +10,8 @@ from django.db import transaction
 from utils.commonUtils import fetch_serializer_error
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum
+from django.db.models import Sum, Prefetch, Count, Q
+from rest_framework.permissions import AllowAny
 
 
 customers_logger = logging.getLogger("Customers")
@@ -22,18 +23,30 @@ class CustomersListView(APIView):
         This view returns all the active customers
     '''
     permission_classes = [IsDeliveryAgentOrAdmin]
+    # permission_classes = [AllowAny]
     SERIALIZER_CLASS = CustomersListSerializer
 
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get(self, request):
-        try:
-            customers_list = (CustomerSubscriptionModel.objects
-                              .filter(is_active=True)
+    def get_queryset(self):
+        self.queryset = (CustomerSubscriptionModel.objects
+                              .annotate(
+                                  total_turnover=Sum('monthly_payments__amount_paid'), 
+                                  payments_pending_count=Count('monthly_payments', filter=Q(monthly_payments__is_paid=False))
+                                )
+                              .prefetch_related(
+                                  Prefetch('monthly_payments', 
+                                           queryset=MonthlyPaymentModel.objects.pending_payments().order_by('month'),
+                                           to_attr='pending_payments')
+                                )
                               .select_related('user', 'subscription', 'delivery_agent', 'subscription__product', 'subscription__animal')
                               .order_by('-created_at'))
-            serializer = self.SERIALIZER_CLASS(customers_list, many=True)
+
+    def get(self, request):
+        try:
+            self.get_queryset()
+            serializer = self.SERIALIZER_CLASS(self.queryset, many=True)
             return Response({"data": serializer.data, "message": "All customer details"}, status=200)
         except Exception as err:
             customers_logger.error(str(err))
@@ -42,6 +55,15 @@ class CustomersListView(APIView):
 
 class CustomersListViewWeb(CustomersListView):
     SERIALIZER_CLASS = CustomersListSerializerForWeb
+
+    def get_queryset(self):
+        self.queryset = (CustomerSubscriptionModel.objects
+                              .annotate(
+                                  total_turnover=Sum('monthly_payments__amount_paid'), 
+                                  payments_pending_count=Count('monthly_payments', filter=Q(monthly_payments__is_paid=False))
+                                )
+                              .select_related('user', 'subscription', 'delivery_agent', 'subscription__product', 'subscription__animal')
+                              .order_by('-created_at'))
 
 
 class DeliveryAgentsDropDownView(APIView):
@@ -79,19 +101,24 @@ class CheckUsernameUniquenessView(APIView):
 
 
 class CustomerByIdView(APIView):
-    def dispatch(self, request, *args, **kwargs):
-        self.data = {}
-        self.message = "Success"
-        self.status = 200
-        return super().dispatch(request, *args, **kwargs)
-
     def get(self, request, id):
-        customer = CustomerSubscriptionModel.objects.filter(id=id).first()
-
+        customer = (CustomerSubscriptionModel.objects
+                              .filter(user_id=id)
+                              .annotate(total_turnover=Sum('monthly_payments__amount_paid'))
+                              .prefetch_related(
+                                  Prefetch('monthly_payments', 
+                                           queryset=MonthlyPaymentModel.objects.pending_payments().order_by('month'),
+                                           to_attr='pending_payments')
+                                )
+                              .select_related('user', 'subscription', 'delivery_agent', 'subscription__product', 'subscription__animal')
+                              ).first()
+        
         if not customer:
             return Response({"data": None, "message": "Customer not found"}, status=400)
 
-        
+        serializer = CustomerDetailsByIdSerializer(customer)
+        return Response({"data": serializer.data, "message": "Customer details fetched successfully"}, status=200)
+
 
 class AddCustomerView(APIView):
     permission_classes = [IsDeliveryAgentOrAdmin]
@@ -154,10 +181,12 @@ class AllPaymentsView(APIView):
         payments = queryset.select_related('customer__user').order_by('-amount_due')
 
         serializer = PaymentsListingSerializer(payments, many=True)
+
         data = {"data": serializer.data}
         data["total_due"] = totals["total_due"]
         data["total_paid"] = totals["total_paid"]
         data["total_payment"] = totals["total_due"] + totals["total_paid"]
+        data["month"] = datetime.strftime(one_month_back, '%B')
 
         return Response({"data": data, "message": "All Payments"}, status=200)
 

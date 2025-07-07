@@ -7,6 +7,7 @@ urlpatterns = [
     path('all/', CustomersListView.as_view()),
     path('web/all/', CustomersListViewWeb.as_view()),
     path('add/', AddCustomerView.as_view()),
+    path('<int:id>/', CustomerByIdView.as_view()),
     path('username-available/', CheckUsernameUniquenessView.as_view()),
 
     #Subscriptions

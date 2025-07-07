@@ -22,4 +22,4 @@ class IsDeliveryAgentOrAdmin(BasePermission):
     Custom permission to only allow delivery agents or admin to access the view.
     """
     def has_permission(self, request, view):
-        return request.user.role in {1, 3}
+        return bool(request.user and request.user.is_authenticated and request.user.role in {1, 3})
