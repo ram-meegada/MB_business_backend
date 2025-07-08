@@ -187,7 +187,9 @@ class AllPaymentsView(APIView):
         data["total_paid"] = totals["total_paid"]
         data["total_payment"] = totals["total_due"] + totals["total_paid"]
         data["month"] = datetime.strftime(one_month_back, '%B')
+        data["current_year_revenue"] = (MonthlyPaymentModel.objects
+                                        .filter(month__year=now.year)
+                                        .aggregate(current_year_revenue=Sum('amount_paid'))['current_year_revenue']
+                                    )
 
         return Response({"data": data, "message": "All Payments"}, status=200)
-
-

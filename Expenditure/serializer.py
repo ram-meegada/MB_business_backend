@@ -44,6 +44,21 @@ class ExpenditureReadSerializer(serializers.ModelSerializer):
             return created_at_verbose(obj.created_at)
         except:
             return ""
+        
+class ExpenditureReadWebSerializer(ExpenditureReadSerializer):
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2, coerce_to_string=False)
+    parent_category = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ExpenditureModel
+        fields = ['category', 'parent_category', 'amount', 'description', 'created_at']
+
+    def get_parent_category(self, obj):
+        return obj.category.parent.name
+
+    def get_category(self, obj):
+        return obj.category.name
 
 
 ####################### Expenditure category #####################

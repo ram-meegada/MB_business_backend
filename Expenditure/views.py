@@ -16,10 +16,17 @@ from utils.expenditureUtils import MONTH_NAMES, PIE_CHART_COLORS, MONTHS_WITH_IN
 from rest_framework.permissions import IsAdminUser
 from django.http import JsonResponse
 from rest_framework.permissions import AllowAny
+import ipdb
+import calendar
 
 
 class ExpenditureView(APIView):
     permission_classes = [IsAdminUser]
+    read_serializer = ExpenditureReadSerializer
+
+    def dispatch(self, request, *args, **kwargs):
+        self.now = timezone.now()
+        return super().dispatch(request, *args, **kwargs)
     def post(self, request):
         serializer = ExpenditureWriteSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
@@ -30,8 +37,22 @@ class ExpenditureView(APIView):
 
     def get(self, request):
         all_expenditures = ExpenditureModel.objects.filter(user=request.user).select_related('category', 'category__parent')
-        serializer = ExpenditureReadSerializer(all_expenditures, many=True)
-        return Response({"data": serializer.data, "message": "All Expenditures fetched successfully"}, status=200)
+        serializer = self.read_serializer(all_expenditures, many=True)
+
+        current_year_start_date = self.now.replace(month=1, hour=0, minute=0, second=0, microsecond=0)
+
+        data = {}
+        data["data"] = serializer.data
+        data["current_year_expenditure"] = (all_expenditures
+                                            .filter(created_at__gte=current_year_start_date)
+                                            .aggregate(current_year_expenditure=Sum('amount'))['current_year_expenditure']
+                                        )
+
+        return Response({"data": data, "message": "All Expenditures fetched successfully"}, status=200)
+
+
+class ExpenditureWebView(ExpenditureView):
+    read_serializer = ExpenditureReadWebSerializer
 
 
 class ManageExpenditureView(APIView):
@@ -95,30 +116,31 @@ class ExpenditureAnalyticsView(APIView):
                             "bar_chart_data": [], 
                             "metadata": {
                                 "year": self.year,
+                                "link_to": 'main_categories_analysis'
                             }
                         }
             monthly_analytics = dict(ExpenditureModel.objects
                                  .filter(user=self.request.user, created_at__year=self.year)
                                  .values('created_at__month')
-                                 .annotate(month=Func(
-                                     F('created_at__date'), 
-                                     function="TO_CHAR", template="TO_CHAR(%(expressions)s, 'Mon')"),
-                                     month_total=Cast(Sum('amount'), output_field=FloatField()))
-                                 .values_list('month', 'month_total')
+                                 .annotate(
+                                     month_total=Cast(Sum('amount'), output_field=FloatField())
+                                    )
+                                 .values_list('created_at__month', 'month_total')
                                 )
- 
-            for mon in MONTH_NAMES:
+
+            for mon in range(1, 13):
                 month_total = 0
                 if mon in monthly_analytics:
                     month_total = monthly_analytics[mon]
-                graph_data["bar_chart_data"].append({"x": mon, "y": month_total})
+                graph_data["bar_chart_data"].append({"x": calendar.month_abbr[mon], "y": month_total})
 
         elif self.request.data["analytics_type"] == "main_categories_analysis":
             graph_data = {
-                            "pie_chart_data": [], 
+                            "bar_chart_data": [], 
                             "metadata": {
                                 "year": self.year,
-                                "month": self.month
+                                "month": self.month,
+                                "link_to": 'sub_categories_analysis'
                             }
                         }
             if self.month is None:
@@ -138,7 +160,7 @@ class ExpenditureAnalyticsView(APIView):
             colors = PIE_CHART_COLORS
 
             for index, (key, value) in enumerate(exp.items()):
-                graph_data["pie_chart_data"].append({ "x": key, "y": value, "color": colors[index] })
+                graph_data["bar_chart_data"].append({ "x": key, "y": value, "color": colors[index] })
 
         elif self.request.data["analytics_type"] == "sub_categories_analysis":
 
@@ -149,7 +171,7 @@ class ExpenditureAnalyticsView(APIView):
                 return Response({"data": None, "message": "Category is required for Sub categories analysis"}, status=400)
 
             graph_data = {
-                            "pie_chart_data": [], 
+                            "bar_chart_data": [], 
                             "metadata": {
                                 "year": self.year,
                                 "month": self.month,
@@ -172,7 +194,7 @@ class ExpenditureAnalyticsView(APIView):
             colors = PIE_CHART_COLORS
 
             for index, (key, value) in enumerate(exp.items()):
-                graph_data["pie_chart_data"].append({ "x": key, "y": value, "color": colors[(index + 1)*-1] })
+                graph_data["bar_chart_data"].append({ "x": key, "y": value, "color": colors[(index + 1)*-1] })
 
         return Response({"data": graph_data, "message": "Expenditure analytics fetched successfully"}, status=200)
 
