@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from Expenditure.models import *
 from utils.commonUtils import created_at_verbose
+from django.utils import timezone
+import ipdb
 
 
 class ExpenditureWriteSerializer(serializers.ModelSerializer):
@@ -41,7 +43,7 @@ class ExpenditureReadSerializer(serializers.ModelSerializer):
             return ""
     def get_created_at(self, obj):
         try:
-            return created_at_verbose(obj.created_at)
+            return created_at_verbose(timezone.localtime(obj.created_at))
         except:
             return ""
         

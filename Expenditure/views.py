@@ -27,6 +27,7 @@ class ExpenditureView(APIView):
     def dispatch(self, request, *args, **kwargs):
         self.now = timezone.now()
         return super().dispatch(request, *args, **kwargs)
+
     def post(self, request):
         serializer = ExpenditureWriteSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
@@ -57,6 +58,7 @@ class ExpenditureWebView(ExpenditureView):
 
 class ManageExpenditureView(APIView):
     permission_classes = [IsAdminUser]
+
     def dispatch(self, request, *args, **kwargs):
         id = kwargs["id"]
         self.get_record(id)
