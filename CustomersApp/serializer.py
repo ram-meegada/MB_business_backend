@@ -106,7 +106,7 @@ class PaymentsListingSerializer(serializers.ModelSerializer):
     customer = serializers.SerializerMethodField()
     class Meta:
         model = MonthlyPaymentModel
-        fields = ['customer', 'amount_due', 'amount_paid', 'is_paid']
+        fields = ['customer', 'amount_due', 'amount_paid', 'is_paid', 'id']
 
     def get_customer(self, obj):
         return {'id': obj.customer.user_id, 'name': obj.customer.user.name}

@@ -83,7 +83,7 @@ class DeliveryAgentsDropDownView(APIView):
         except Exception as err:
             customers_logger.error(str(err))
             return Response({"data": None, "message": "Something went wrong"}, status=500)
-        
+
 
 class CheckUsernameUniquenessView(APIView):
     def post(self, request):
@@ -193,3 +193,70 @@ class AllPaymentsView(APIView):
                                     )
 
         return Response({"data": data, "message": "All Payments"}, status=200)
+
+
+class PaymentByIdView(APIView):
+    '''
+        Details of payment for particular month.
+    '''
+
+    def dispatch(self, request, *args, **kwargs):
+        self.status = 200
+        self.data = {}
+        self.message = "Success"
+        self.json_response = {'message': self.message}
+        self.request = request
+        self.payment_id = kwargs['id']
+        return super().dispatch(request, *args, **kwargs)
+
+    def prepare_get_request_data(self):
+        self.data['name'] = self.payment_obj.customer.user.name
+        self.data['month'] = self.payment_obj.payment_month
+        self.data['amount_due'] = self.payment_obj.amount_due
+        self.data['amount_paid'] = self.payment_obj.amount_paid
+        self.data['is_paid'] = self.payment_obj.is_paid
+        self.data['payment_date'] = self.payment_obj.payment_date
+
+    def get_payment_object(self):
+        self.payment_obj = MonthlyPaymentModel.objects.get(id=self.payment_id)
+
+    def get(self, request, id):
+        try:
+            self.get_payment_object()
+            self.prepare_get_request_data()
+
+            self.json_response['data'] = self.data
+        except Exception as err:
+            customers_logger.info(err.args[0])
+            self.message = 'Something went wrong'
+            self.status = 500
+
+        self.json_response['message'] = self.message
+        return Response(self.json_response, status=self.status)
+    
+    def validate_input(self):
+        self.amount_due = self.request.data.get('amount_due')
+        self.amount_paid = self.request.data.get('amount_paid')
+        self.payment_date = self.request.data.get('payment_date')
+        self.is_paid = self.request.data.get('is_paid')
+
+    def patch(self, request, id):
+        try:
+            self.get_payment_object()
+            self.validate_input()
+
+            if self.status == 200:
+                self.payment_obj.amount_due = self.amount_due
+                self.payment_obj.amount_paid = self.amount_paid
+                self.payment_obj.payment_date = self.payment_date
+                self.payment_obj.is_paid = self.is_paid
+
+                self.payment_obj.save()
+
+        except Exception as err:
+            customers_logger.info(err.args[0])
+            self.message = 'Something went wrong'
+            self.status = 500
+
+        self.json_response['message'] = self.message
+        return Response(self.json_response, status=self.status)

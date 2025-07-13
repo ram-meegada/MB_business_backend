@@ -4,6 +4,7 @@ from livestock.models import ProductsModel, AnimalModel
 from authentication.models import UserModel
 from utils.customersUtils import quantity_verbose
 from django.utils.functional import cached_property
+from datetime import datetime
 
 
 class SubscriptionPlanModel(BaseModel):
@@ -106,3 +107,7 @@ class MonthlyPaymentModel(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['customer', 'month'], name='unique_monthly_payment')
         ]
+
+    @property
+    def payment_month(self):
+        return datetime.strftime(self.month, '%B %Y')

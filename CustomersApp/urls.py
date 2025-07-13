@@ -18,4 +18,5 @@ urlpatterns = [
 
     #Payments
     path('payments/', AllPaymentsView.as_view()),
+    path('view-payment/<int:id>/', PaymentByIdView.as_view()),
 ]
