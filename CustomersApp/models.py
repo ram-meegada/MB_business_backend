@@ -93,7 +93,10 @@ class MonthlyPaymentManager(models.Manager):
     def pending_payments(self):
         return self.get_queryset().filter(is_paid=False)
 
-class MonthlyPaymentModel(models.Model):
+    def paid_payments(self):
+        return self.get_queryset().filter(is_paid=True)
+
+class MonthlyPaymentModel(BaseModel):
     customer = models.ForeignKey(CustomerSubscriptionModel, on_delete=models.SET_NULL, null=True, related_name='monthly_payments')
     month = models.DateField(help_text="Use any date in the month, e.g. 2025-06-01")
     amount_due = models.DecimalField(max_digits=10, decimal_places=2)
