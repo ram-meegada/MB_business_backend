@@ -70,7 +70,15 @@ def data_migration_for_june_orders():
         OrdersModel.objects.bulk_create(order_objs)
 
 
+def test():
+    from CustomersApp.models import MonthlyPaymentModel
+
+    mon = MonthlyPaymentModel.objects.values('month__month')
+    print(mon)
+
+
 if __name__ == "__main__":
-    run_crons()
+    # run_crons()
+    test()
     # data_migration_for_june_orders()
     pass
