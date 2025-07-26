@@ -76,9 +76,8 @@ def test():
     mon = MonthlyPaymentModel.objects.values('month__month')
     print(mon)
 
-
 if __name__ == "__main__":
     # run_crons()
-    test()
+    # test()
     # data_migration_for_june_orders()
     pass
