@@ -1,5 +1,6 @@
 from django.urls import path
 from Expenditure.views import *
+from Analytics.expenditureAnalytics import ExpenditureAnalyticsView
 
 
 urlpatterns = [

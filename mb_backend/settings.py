@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
 
     'django_extensions',
-    'django_celery_beat',
+    'django_cron',
+    # 'django_celery_beat',
 
     'rest_framework',
     'corsheaders',
@@ -187,13 +188,23 @@ LOGS_PATH = os.path.join(BASE_DIR, 'logs')
 FILE_SIZE = 1024 * 1024 * 5  # 5 MB
 BACKUP_COUNT = 2
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # or RabbitMQ if preferred
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-
 PRIMARY_MAIL = config('PRIMARY_MAIL')
 
 SEND_MAIL_OVER_QUERIES = False
+
+ADMINS = [
+    ('Ram', 'ramumeegada18@gmail.com'),
+    ('Lahari', 'laharimeegada9@gmail.com'),
+    ('Jaitej', 'jaitejmeegada@gmail.com'),
+    ('Vamsi', 'vamsisunny7013@gmail.com'),
+    # ('Deshuk', '')
+]
+
+CRON_CLASSES = [
+    'CustomersApp.crons.GenerateMonthlyPaymentsCron',
+    'CustomersApp.crons.CreateDailyOrdersCron',
+]
+
 
 LOGGING = {
     "version": 1,
@@ -260,6 +271,22 @@ LOGGING = {
             "backupCount": BACKUP_COUNT,
             "formatter": "verbose",
         },
+        "analytics_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "analytics.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
+        },
+        "crons_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "crons.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
+        }
     },
     "loggers": {
         "django": {
@@ -288,6 +315,16 @@ LOGGING = {
         },
         "Customers": {
             "handlers": ["customers_handler"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "Analytics": {
+            "handlers": ["analytics_handler"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "Crons": {
+            "handlers": ["crons_handler"],
             "level": "DEBUG",
             "propagate": False,
         },

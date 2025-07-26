@@ -42,18 +42,20 @@ class OrdersModelAdmin(admin.ModelAdmin):
 
     @admin.display()
     def subscribed_customer(self, obj):
-        return obj.customer.user.name
-
+        try:
+            return obj.customer.user.name
+        except:
+            return 'NA'
 
 class MonthlyPaymentModelAdmin(admin.ModelAdmin):
     list_display = ['customer_name', 'payments_month', 'amount_due', 'amount_paid', 'is_paid']
     search_fields = ['customer__user__name']
 
-    @admin.display(empty_value="NA")
+    @admin.display()
     def customer_name(self, obj):
         return obj.customer.user.name if obj.customer else None
     
-    @admin.display(empty_value="NA")
+    @admin.display()
     def payments_month(self, obj):
         return datetime.strftime(obj.month, "%B %Y")
 

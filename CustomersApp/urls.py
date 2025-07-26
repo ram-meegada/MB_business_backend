@@ -1,5 +1,6 @@
 from django.urls import path
 from CustomersApp.views import *
+from Analytics import PaymentAnalyticsView, MarginAnalyticsApi
 
 
 urlpatterns = [
@@ -19,4 +20,6 @@ urlpatterns = [
     #Payments
     path('payments/', AllPaymentsView.as_view()),
     path('view-payment/<int:id>/', PaymentByIdView.as_view()),
+    path('payment-analytics/', PaymentAnalyticsView.as_view()),
+    path('margin-analytics/', MarginAnalyticsApi.as_view()),
 ]
