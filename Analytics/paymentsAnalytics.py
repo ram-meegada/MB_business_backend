@@ -20,18 +20,19 @@ class PaymentAnalyticsView(APIView):
     def dispatch(self, request, *args, **kwargs):
         self.status = 200
         self.message = "Success"
-        self.json_response = {'message': self.message}
         self.request = request
         self.now = timezone.now()
         self.year = self.now.year
         self.bar_chart_data = []
         self.api_response = {
-                            "bar_chart_data": [], 
-                            "metadata": {
-                                "year": self.year,
-                                "link_to": ''
+                                "data": {
+                                "bar_chart_data": [],
+                                "metadata": {
+                                    "year": self.year,
+                                    "link_to": ''
+                                }
+                              }
                             }
-                        }
         return super().dispatch(request, *args, **kwargs)
 
     def validate_and_parse_input(self):
@@ -63,10 +64,10 @@ class PaymentAnalyticsView(APIView):
 
             if self.status == 200:
                 self.build_api_response()
-                self.api_response["bar_chart_data"] = self.bar_chart_data
+                self.api_response["data"]["bar_chart_data"] = self.bar_chart_data
 
         except Exception as err:
-            analytics_logger.info(err.args[0] if err.args else 'Soomething gone wrong')
+            analytics_logger.info(err.args[0] if err.args else 'Something gone wrong')
             self.message = 'Internal server error'
             self.status = 500
 
