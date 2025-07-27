@@ -3,7 +3,8 @@ from django.core.mail import send_mail
 import logging
 from django.utils import timezone
 from datetime import timedelta, datetime
-import ipdb
+from django.db import connection
+import tracemalloc
 
 
 logger = logging.getLogger("Common")
@@ -54,3 +55,26 @@ def created_at_verbose(created_at):
     except Exception as err:
         logger.error(f"created_at_verbose function failed with error:- {err}")
         return ""
+
+
+def debugging_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = datetime.now()
+
+        tracemalloc.start()
+        mem_snapshot_one = tracemalloc.take_snapshot()
+
+        result = func(*args, **kwargs)
+
+        mem_snapshot_two = tracemalloc.take_snapshot()
+        tracemalloc.stop()
+
+        stats = mem_snapshot_two.compare_to(mem_snapshot_one, 'lineno')
+        total_memory_taken = sum([stat.size_diff for stat in stats])
+
+        logger.info(f'Number of queries taken, {len(connection.queries)}')
+        logger.info(f'Total Execution time, {datetime.now() - start_time}')
+        logger.info(f'Total memory taken, {total_memory_taken/1024} KB')
+
+        return result
+    return wrapper
