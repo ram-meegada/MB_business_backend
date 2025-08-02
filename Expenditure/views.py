@@ -6,18 +6,9 @@ from utils.messages import *
 from .serializer import *
 from utils.commonUtils import fetch_serializer_error
 from django.utils import timezone
-from datetime import timedelta, datetime
-from dateutil.relativedelta import relativedelta
 from django.db.models import Q, Sum, Func, F, FloatField
-from django.db.models.functions import Cast
-from django.db import connection
 import json
-from utils.expenditureUtils import MONTH_NAMES, PIE_CHART_COLORS, MONTHS_WITH_INT_MAPPING
 from rest_framework.permissions import IsAdminUser
-from django.http import JsonResponse
-from rest_framework.permissions import AllowAny
-import ipdb
-import calendar
 
 
 class ExpenditureView(APIView):
