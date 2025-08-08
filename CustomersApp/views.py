@@ -183,9 +183,10 @@ class AllPaymentsView(APIView):
         serializer = PaymentsListingSerializer(payments, many=True)
 
         data = {"data": serializer.data}
+
         data["total_due"] = totals["total_due"]
         data["total_paid"] = totals["total_paid"]
-        data["total_payment"] = totals["total_due"] + totals["total_paid"]
+        data["total_payment"] = (totals.get("total_due") or 0) + (totals.get("total_paid") or 0)
         data["month"] = datetime.strftime(one_month_back, '%B')
         data["current_year_revenue"] = (MonthlyPaymentModel.objects
                                         .filter(month__year=now.year)

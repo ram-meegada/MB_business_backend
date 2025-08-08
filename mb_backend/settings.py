@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-04*fp#rg&n)g+q)$(_d4-looswhd3f6iyv%i1$bj0@fcdj7@)w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2", '192.168.1.23']
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2", '192.168.1.23', 'localhost']
 
 # Application definition
 
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # 'django_celery_beat',
 
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 
     #Apps
@@ -91,6 +92,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://192.168.1.23:5173',
     'http://localhost:5173',
 ]
+
+CORS_ALLOW_CREDENTIALS=True
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -158,9 +161,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    # "REFRESH_TOKEN_LIFETIME": timedelta(days=10)
-    "REFRESH_TOKEN_LIFETIME": timedelta(seconds=10)
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # "ROTATE_REFRESH_TOKENS": True,
+    # "BLACKLIST_AFTER_ROTATION": True
 }
 
 AUTH_USER_MODEL = "authentication.UserModel"
@@ -197,7 +201,7 @@ ADMINS = [
     ('Lahari', 'laharimeegada9@gmail.com'),
     ('Jaitej', 'jaitejmeegada@gmail.com'),
     ('Vamsi', 'vamsisunny7013@gmail.com'),
-    # ('Deshuk', '')
+    ('Deshuk', 'deshukyadav3@gmail.com')
 ]
 
 CRON_CLASSES = [
