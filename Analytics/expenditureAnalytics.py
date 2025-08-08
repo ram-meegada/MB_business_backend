@@ -101,7 +101,7 @@ class ExpenditureAnalyticsView(APIView):
                 .filter(
                     user=self.request.user,
                     created_at__year=self.year,
-                    created_at__month=timezone.now().month, 
+                    created_at__month=MONTHS_WITH_INT_MAPPING[self.month],
                     category__parent__name=self.request.data["category"]
                 )
                 .values('category')
