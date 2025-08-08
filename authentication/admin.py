@@ -20,4 +20,4 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ['username', 'name']
     form = UserForm
 
-admin.site.register(UserModel, UserAdmin)
+# admin.site.register(UserModel, UserAdmin)
