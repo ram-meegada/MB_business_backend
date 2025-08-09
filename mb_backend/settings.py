@@ -91,6 +91,7 @@ WSGI_APPLICATION = 'mb_backend.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
     'http://192.168.1.23:5173',
     'http://localhost:5173',
+    'https://mb-admin-frontend.netlify.app'
 ]
 
 CORS_ALLOW_CREDENTIALS=True
