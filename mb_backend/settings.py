@@ -209,6 +209,8 @@ CRON_CLASSES = [
     'CustomersApp.crons.CreateDailyOrdersCron',
 ]
 
+if not os.path.exists(LOGS_PATH):
+    os.makedirs(LOGS_PATH)
 
 LOGGING = {
     "version": 1,
