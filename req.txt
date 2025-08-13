@@ -69,3 +69,4 @@ websocket-client==1.8.0
 wsproto==1.2.0
 xmltodict==0.14.2
 git+https://github.com/ram-meegada/django-cron-updated-ram
+whitenoise=6.9.0
