@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-04*fp#rg&n)g+q)$(_d4-looswhd3f6iyv%i1$bj0@fcdj7@)w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2", '192.168.1.23', 'localhost', 'mb-business-backend.onrender.com']
 
@@ -183,8 +183,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Email Sending configuration
 EMAIL_BACKEND = config('EMAIL_BACKEND')
 EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS')
-EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
@@ -205,6 +205,8 @@ ADMINS = [
     ('Vamsi', 'vamsisunny7013@gmail.com'),
     ('Deshuk', 'deshukyadav3@gmail.com')
 ]
+
+DJANGO_CRON_OUTPUT_ERRORS = True
 
 CRON_CLASSES = [
     'CustomersApp.crons.GenerateMonthlyPaymentsCron',
@@ -336,5 +338,10 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": False,
         },
+        'django_cron': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        }
     },
 }
