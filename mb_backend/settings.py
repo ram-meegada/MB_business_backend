@@ -211,6 +211,7 @@ DJANGO_CRON_OUTPUT_ERRORS = True
 CRON_CLASSES = [
     'CustomersApp.crons.GenerateMonthlyPaymentsCron',
     'CustomersApp.crons.CreateDailyOrdersCron',
+    'infra.crons.SaveBackUpOfProdDbCron'
 ]
 
 if not os.path.exists(LOGS_PATH):
