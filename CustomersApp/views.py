@@ -86,6 +86,7 @@ class DeliveryAgentsDropDownView(APIView):
 
 
 class CheckUsernameUniquenessView(APIView):
+    permission_classes = [IsDeliveryAgentOrAdmin]
     def post(self, request):
         username = request.data.get("username")
 
@@ -101,6 +102,7 @@ class CheckUsernameUniquenessView(APIView):
 
 
 class CustomerByIdView(APIView):
+    permission_classes = [IsDeliveryAgentOrAdmin]
     def get(self, request, id):
         customer = (CustomerSubscriptionModel.objects
                               .filter(user_id=id)
@@ -169,6 +171,7 @@ class AllPaymentsView(APIView):
     '''
         Lists all payments by month. Default will be last month payments
     '''
+    permission_classes = [IsDeliveryAgentOrAdmin]
     def get(self, request):
         now = timezone.now()
         one_month_back = now - relativedelta(months=1)
@@ -200,7 +203,7 @@ class PaymentByIdView(APIView):
     '''
         Details of payment for particular month.
     '''
-
+    permission_classes = [IsDeliveryAgentOrAdmin]
     def dispatch(self, request, *args, **kwargs):
         self.status = 200
         self.data = {}
@@ -259,5 +262,55 @@ class PaymentByIdView(APIView):
             self.message = 'Something went wrong'
             self.status = 500
 
+        self.json_response['message'] = self.message
+        return Response(self.json_response, status=self.status)
+
+
+################################# Orders List ###################################
+
+class OrdersListView(APIView):
+    permission_classes = [IsDeliveryAgentOrAdmin]
+    def dispatch(self, request, *args, **kwargs):
+        self.status = 200
+        self.message = "Success"
+        self.request = request
+        self.api_data = None
+        self.json_response = {'data': self.api_data, 'message': self.message}
+        self.now = timezone.now()
+        return super().dispatch(request, *args, **kwargs)
+
+    def make_queryset(self):
+        self.orders = OrdersModel.objects.filter(schedule_date=self.date).order_by('-created_at')
+        
+    def build_api_response(self):
+        self.api_data = []
+
+        for order in self.orders:
+            temp_dict = {}
+            temp_dict['customer'] = {"id": order.customer.user_id, "name": order.customer.user.name}
+            temp_dict['subscription'] = str(order.customer.subscription)
+            temp_dict['price_at_order'] = order.price_at_order
+            temp_dict['is_morning_delivery'] = order.is_morning_delivery
+            temp_dict['status'] = order.status
+
+            self.api_data.append(temp_dict)
+
+    def validate_and_parse_input(self):
+        self.date = self.request.data.get('date', self.now.date())
+    
+    def post(self, request):
+        try:
+            self.validate_and_parse_input()
+    
+            if self.status == 200:
+                self.make_queryset()
+                self.build_api_response()
+                self.json_response["data"] = self.api_data
+    
+        except Exception as err:
+            customers_logger.info(err.args[0] if err.args else 'Something gone wrong')
+            self.message = 'Internal server error'
+            self.status = 500
+    
         self.json_response['message'] = self.message
         return Response(self.json_response, status=self.status)

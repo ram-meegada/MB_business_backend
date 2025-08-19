@@ -22,4 +22,7 @@ urlpatterns = [
     path('view-payment/<int:id>/', PaymentByIdView.as_view()),
     path('payment-analytics/', PaymentAnalyticsView.as_view()),
     path('margin-analytics/', MarginAnalyticsApi.as_view()),
+
+    # Orders
+    path('orders/', OrdersListView.as_view()),
 ]
