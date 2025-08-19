@@ -38,7 +38,7 @@ class CreateDailyOrdersCron(CronJobBase):
             raise Exception('Something gone wrong.')
 
         customer_subscriptions = CustomerSubscriptionModel.objects.filter(query, is_active=True)
-        already_created_orders = set(OrdersModel.objects.filter(schedule_date='2025-07-25').values_list('customer', 'is_morning_delivery', 'schedule_date'))
+        already_created_orders = set(OrdersModel.objects.filter(schedule_date=today_date).values_list('customer', 'is_morning_delivery', 'schedule_date'))
         order_objs = []
 
         for cus_sub in customer_subscriptions:
