@@ -28,14 +28,15 @@ class ExpenditureView(APIView):
         return Response({"data": serializer.errors, "message": error}, status=400)
 
     def get(self, request):
-        all_expenditures = ExpenditureModel.objects.filter(user=request.user).select_related('category', 'category__parent')
+        input_month = request.data.get('month', self.now.date().month)
+        all_expenditures = ExpenditureModel.objects.filter(user=request.user, created_at__month=input_month).select_related('category', 'category__parent')
         serializer = self.read_serializer(all_expenditures, many=True)
 
         current_year_start_date = self.now.replace(month=1, hour=0, minute=0, second=0, microsecond=0)
 
         data = {}
         data["data"] = serializer.data
-        data["current_year_expenditure"] = (all_expenditures
+        data["current_year_expenditure"] = (ExpenditureModel.objects
                                             .filter(created_at__gte=current_year_start_date)
                                             .aggregate(current_year_expenditure=Sum('amount'))['current_year_expenditure']
                                         )
