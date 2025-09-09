@@ -9,7 +9,6 @@ from datetime import date
 
 class LiveStockModel(BaseModel):
     image = models.ImageField(upload_to='images', blank=True, null=True)
-    user = models.ForeignKey(UserModel, on_delete=models.PROTECT)
     breed = models.CharField(choices=breedChoices)
     is_pregnant = models.BooleanField(default=False)
     last_calvation_date = models.DateField(blank=True, null=True)

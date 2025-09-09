@@ -28,7 +28,7 @@ class SubscriptionDetailsSerializer(serializers.ModelSerializer):
 class CustomerBaseWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerSubscriptionModel
-        ['id', 'user', 'subscription', 'start_date', 'delivery_agent', 'schedule']
+        fields = ['id', 'user', 'subscription', 'start_date', 'delivery_agent']
 
 
 class CustomerBaseSerializer(serializers.ModelSerializer):
@@ -74,7 +74,7 @@ class CustomerBaseSerializer(serializers.ModelSerializer):
     
     def get_start_date(self, obj):
         if obj.start_date:
-            return datetime.strftime(obj.start_date, '%d %B %Y')
+            return datetime.strftime(obj.start_date, '%d %b %Y')
 
 
 class CustomersListSerializer(CustomerBaseSerializer):
@@ -88,7 +88,7 @@ class CustomersWriteSerializer(CustomerBaseWriteSerializer):
 class CustomersListSerializerForWeb(CustomerBaseSerializer):
     class Meta:
         model = CustomerSubscriptionModel
-        fields = ['user', 'subscription', 'start_date', 'delivery_agent', 'schedule', 'total_turnover', 'payments_pending_count']
+        fields = ['id', 'user', 'subscription', 'start_date', 'delivery_agent', 'schedule', 'total_turnover', 'payments_pending_count']
 
 
 class CustomerDetailsByIdSerializer(CustomerBaseSerializer):

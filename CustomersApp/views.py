@@ -77,7 +77,7 @@ class DeliveryAgentsDropDownView(APIView):
             active_delivery_agents = UserModel.objects.filter(role=3, is_active=True)
 
             for adg in active_delivery_agents:
-                data.append({"id": adg.pk, "label": adg.username, "value": adg.username})
+                data.append((adg.pk, adg.name))
 
             return Response({"data": data, "message": "All Delivery agents"}, status=200)
         except Exception as err:
@@ -287,6 +287,7 @@ class OrdersListView(APIView):
 
         for order in self.orders:
             temp_dict = {}
+            temp_dict['id'] = order.pk
             temp_dict['customer'] = {"id": order.customer.user_id, "name": order.customer.user.name}
             temp_dict['subscription'] = str(order.customer.subscription)
             temp_dict['price_at_order'] = order.price_at_order
@@ -307,6 +308,55 @@ class OrdersListView(APIView):
                 self.build_api_response()
                 self.json_response["data"] = self.api_data
     
+        except Exception as err:
+            customers_logger.info(err.args[0] if err.args else 'Something gone wrong')
+            self.message = 'Internal server error'
+            self.status = 500
+    
+        self.json_response['message'] = self.message
+        return Response(self.json_response, status=self.status)
+
+
+class AddOrdersView(APIView):
+    permission_classes = (IsDeliveryAgentOrAdmin, )
+
+    def dispatch(self, request, *args, **kwargs):
+        self.status = 200
+        self.message = "Success"
+        self.request = request
+        self.api_data = None
+        self.json_response = {'data': self.api_data, 'message': self.message}
+        return super().dispatch(request, *args, **kwargs)
+    
+    def make_queryset(self):
+        self.customer_subs = CustomerSubscriptionModel.objects.filter(id=self.customer_subscription).first()
+
+        if not self.customer_subs:
+            self.message = 'Customer Subscription not found'
+            self.status = 400
+            return
+
+    def build_api_response(self):
+        self.make_queryset()
+
+        if self.status != 200:
+            return
+
+        self.request.data['price_at_order'] = self.customer_subs.subscription.price
+        order_obj = OrdersModel.objects.create(**self.request.data)
+        self.message = 'Order created successfully'
+
+    def validate_and_parse_input(self):
+        self.customer_subscription = self.request.data.get('customer_id')
+
+    def post(self, *args, **kwargs):
+        try:
+            self.validate_and_parse_input()
+
+            if self.status == 200:
+                self.build_api_response()
+                self.json_response["data"] = self.api_data
+
         except Exception as err:
             customers_logger.info(err.args[0] if err.args else 'Something gone wrong')
             self.message = 'Internal server error'

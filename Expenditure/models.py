@@ -22,7 +22,6 @@ class ExpenditureModel(BaseModel):
     '''
         Model to track business expenses.
     '''
-    user = models.ForeignKey(UserModel, on_delete=models.SET_NULL, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(ExpenditureCategoryModel, on_delete=models.SET_NULL, null=True)
     description = models.TextField(blank=True)

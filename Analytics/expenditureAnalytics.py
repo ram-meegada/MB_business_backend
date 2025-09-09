@@ -40,7 +40,7 @@ class ExpenditureAnalyticsView(APIView):
                             }
                         }
             monthly_analytics = dict(ExpenditureModel.objects
-                                 .filter(user=self.request.user, created_at__year=self.year)
+                                 .filter(created_at__year=self.year)
                                  .values('created_at__month')
                                  .annotate(month_total=Cast(Sum('amount'), output_field=FloatField()))
                                  .values_list('created_at__month', 'month_total')
@@ -66,7 +66,6 @@ class ExpenditureAnalyticsView(APIView):
 
             exp = dict(ExpenditureModel.objects
                 .filter(
-                    user=self.request.user, 
                     created_at__month=MONTHS_WITH_INT_MAPPING[self.month],
                     created_at__year=self.year
                 )
@@ -99,7 +98,6 @@ class ExpenditureAnalyticsView(APIView):
 
             exp = dict(ExpenditureModel.objects
                 .filter(
-                    user=self.request.user,
                     created_at__year=self.year,
                     created_at__month=MONTHS_WITH_INT_MAPPING[self.month],
                     category__parent__name=self.request.data["category"]
