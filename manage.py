@@ -2,11 +2,18 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from decouple import config
+
+IS_PROD = config('IS_PROD', cast=bool)
 
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mb_backend.settings')
+    if not IS_PROD:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mb_backend.settings.dev')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mb_backend.settings.prod')
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

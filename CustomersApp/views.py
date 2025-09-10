@@ -343,7 +343,12 @@ class AddOrdersView(APIView):
             return
 
         self.request.data['price_at_order'] = self.customer_subs.subscription.price
-        order_obj = OrdersModel.objects.create(**self.request.data)
+        try:
+            order_obj = OrdersModel.objects.create(**self.request.data)
+        except IntegrityError:
+            self.message = "This customer already has order on this date. Please update if you want to change"
+            self.status = 400
+            return
         self.message = 'Order created successfully'
 
     def validate_and_parse_input(self):
