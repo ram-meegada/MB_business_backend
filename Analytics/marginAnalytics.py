@@ -41,7 +41,7 @@ class MarginAnalyticsApi(APIView):
         
     def build_api_response(self):
         expenditure_data = dict(ExpenditureModel.objects
-                                 .filter(user=self.request.user, created_at__year=self.year)
+                                 .filter(created_at__year=self.year)
                                  .values('created_at__month')
                                  .annotate(month_total=Sum('amount'))
                                  .values_list('created_at__month', 'month_total')

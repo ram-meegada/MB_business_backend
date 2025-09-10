@@ -25,4 +25,5 @@ urlpatterns = [
 
     # Orders
     path('orders/', OrdersListView.as_view()),
+    path('orders/add/', AddOrdersView.as_view()),
 ]

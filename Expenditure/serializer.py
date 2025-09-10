@@ -6,10 +6,9 @@ import ipdb
 
 
 class ExpenditureWriteSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     class Meta:
         model = ExpenditureModel
-        fields = ['user', 'amount', 'category', 'description']
+        fields = ['amount', 'category', 'description']
         extra_kwargs = {
             'amount': {
                 'error_messages': {'required' :'Amount is required'}
@@ -54,7 +53,7 @@ class ExpenditureReadWebSerializer(ExpenditureReadSerializer):
 
     class Meta:
         model = ExpenditureModel
-        fields = ['category', 'parent_category', 'amount', 'description', 'created_at']
+        fields = ['id', 'category', 'parent_category', 'amount', 'description', 'created_at']
 
     def get_parent_category(self, obj):
         return obj.category.parent.name

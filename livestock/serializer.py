@@ -4,11 +4,9 @@ from utils.liveStockUtils import generate_new_live_stock_id
 
 
 class WriteLiveStockSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
     class Meta:
         model = LiveStockModel
-        fields = ['id', 'user', 'image', 'breed', 'is_pregnant', 'last_calvation_date', 'date_of_birth', 'lactation_month',
+        fields = ['id', 'image', 'breed', 'is_pregnant', 'last_calvation_date', 'date_of_birth', 'lactation_month',
                   'purchase_price', 'milk_capacity', 'parity', 'seller_details', 'qualities', 'food_habits']
         extra_kawrgs = {"seller_details": {"default": ""},
                         "food_habits": {"default": ""}
