@@ -1,11 +1,13 @@
 import boto3
 from decouple import config
+from django.conf import settings
 
 
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
-AWS_REGION = config("AWS_REGION")
-AWS_BUCKET_NAME = config("AWS_BUCKET_NAME")
+AWS_REGION = settings.AWS_REGION
+AWS_BUCKET_NAME = settings.AWS_BUCKET_NAME
+
 
 s3 = boto3.client(
             "s3",
