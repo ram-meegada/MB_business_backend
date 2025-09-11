@@ -4,6 +4,7 @@ from decouple import config
 from django.utils import timezone
 import os
 from utils.s3Boto import save_file_to_s3
+from django.conf import settings
 
 
 class SaveBackUpOfProdDbCron(CronJobBase):
@@ -25,11 +26,11 @@ class SaveBackUpOfProdDbCron(CronJobBase):
         local_path = f"/tmp/{filename}"
         S3_BACKUPS_LOCATION = f'prod-backups/{filename}'
 
-        PG_HOST = config('DB_HOST')
-        PG_USER = config('DB_USER')
-        DB_NAME = config('DB_NAME')
+        PG_HOST = settings.DATABASES['default']['HOST']
+        PG_USER = settings.DATABASES['default']['USER']
+        DB_NAME = settings.DATABASES['default']['NAME']
 
-        os.environ["PGPASSWORD"] = config('DB_PASSWORD')
+        os.environ["PGPASSWORD"] = settings.DATABASES['default']['PASSWORD']
 
         dump_cmd = ["pg_dump", "-h", PG_HOST, "-U", PG_USER, "-F", "c", "-f", local_path, DB_NAME]
         subprocess.run(dump_cmd, check=True)
