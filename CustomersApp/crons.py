@@ -35,7 +35,7 @@ class CreateDailyOrdersCron(CronJobBase):
             query = Q(subscription__schedule__in=[1, 3])
 
         if not shift:
-            raise Exception('Something gone wrong.')
+            raise Exception('Something gone wrong. Shift came as empty')
 
         customer_subscriptions = CustomerSubscriptionModel.objects.filter(query, is_active=True)
         already_created_orders = set(OrdersModel.objects.filter(schedule_date=today_date).values_list('customer', 'is_morning_delivery', 'schedule_date'))
