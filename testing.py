@@ -70,14 +70,24 @@ def data_migration_for_june_orders():
         OrdersModel.objects.bulk_create(order_objs)
 
 
-def test():
-    from CustomersApp.models import MonthlyPaymentModel
+def test_gpt_mini():
+    from openai import OpenAI
 
-    mon = MonthlyPaymentModel.objects.values('month__month')
-    print(mon)
+    client = OpenAI()
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "Translate Telugu voter data into English fields. Call me boss"},
+            {"role": "user", "content": "ఓటరు పేరు: వెంకట రమణ సరిపల్లి"}
+        ]
+    )
+
+    print(response.choices[0].message.content)
+
 
 if __name__ == "__main__":
-    # run_crons()
+    test_gpt_mini()
     # test()
     # data_migration_for_june_orders()
     pass

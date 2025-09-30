@@ -274,6 +274,14 @@ LOGGING = {
             "maxBytes": FILE_SIZE,
             "backupCount": BACKUP_COUNT,
             "formatter": "verbose",
+        },
+        "bujjiAI_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "bujjiAI.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
         }
     },
     "loggers": {
@@ -320,6 +328,14 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
+        },
+        'BujjiAI': {
+            'handlers': ['bujjiAI_handler'],
+            'level': 'DEBUG',
+            'propagate': False,
         }
     },
 }
+
+
+NEWS_API = "fc5bf9c91f6c4e699bddffe2a847d13e"

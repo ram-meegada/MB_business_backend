@@ -26,6 +26,7 @@ urlpatterns = [
     path('user/auth/', include("authentication.urls")),
     path('expenditure/', include("Expenditure.urls")),
     path('customers/', include("CustomersApp.urls")),
+    path('bujjiAI/', include("BujjiAI.urls")),
 ]
 
 if settings.DEBUG:
