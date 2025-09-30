@@ -173,7 +173,7 @@ class AllPaymentsView(APIView):
     '''
     permission_classes = [IsDeliveryAgentOrAdmin]
     def get(self, request):
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         one_month_back = now - relativedelta(months=1)
 
         year = one_month_back.year
@@ -276,7 +276,7 @@ class OrdersListView(APIView):
         self.request = request
         self.api_data = None
         self.json_response = {'data': self.api_data, 'message': self.message}
-        self.now = timezone.now()
+        self.now = timezone.localtime(timezone.now())
         return super().dispatch(request, *args, **kwargs)
 
     def make_queryset(self):
