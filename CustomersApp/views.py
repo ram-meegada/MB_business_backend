@@ -286,6 +286,8 @@ class OrdersListView(APIView):
         self.api_data = []
 
         for order in self.orders:
+            if not order.customer:
+                continue
             temp_dict = {}
             temp_dict['id'] = order.pk
             temp_dict['customer'] = {"id": order.customer.user_id, "name": order.customer.user.name}
