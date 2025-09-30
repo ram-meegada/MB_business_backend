@@ -21,7 +21,7 @@ class PaymentAnalyticsView(APIView):
         self.status = 200
         self.message = "Success"
         self.request = request
-        self.now = timezone.now()
+        self.now = timezone.localtime(timezone.now())
         self.year = self.now.year
         self.bar_chart_data = []
         self.api_response = {
