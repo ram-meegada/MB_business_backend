@@ -179,7 +179,7 @@ class AllPaymentsView(APIView):
         year = one_month_back.year
         month = one_month_back.month
 
-        queryset = MonthlyPaymentModel.objects.filter(month__month=month, month__year=year)
+        queryset = MonthlyPaymentModel.objects.filter(month__month=month, month__year=year, customer__isnull=False)
         totals = queryset.aggregate(total_due=Sum('amount_due'), total_paid=Sum('amount_paid'))
         payments = queryset.select_related('customer__user').order_by('-amount_due')
 

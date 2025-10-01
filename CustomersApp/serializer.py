@@ -109,4 +109,6 @@ class PaymentsListingSerializer(serializers.ModelSerializer):
         fields = ['customer', 'amount_due', 'amount_paid', 'is_paid', 'id']
 
     def get_customer(self, obj):
-        return {'id': obj.customer.user_id, 'name': obj.customer.user.name}
+        if obj.customer:
+            return {'id': obj.customer.user_id, 'name': obj.customer.user.name}
+        return None
