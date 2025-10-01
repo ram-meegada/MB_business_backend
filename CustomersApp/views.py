@@ -300,7 +300,10 @@ class OrdersListView(APIView):
 
     def validate_and_parse_input(self):
         self.date = self.request.data.get('date', self.now.date())
-    
+
+        if not self.date:
+            self.date = self.now.date()
+
     def post(self, request):
         try:
             self.validate_and_parse_input()
