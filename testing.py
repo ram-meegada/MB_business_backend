@@ -1,10 +1,13 @@
 import os
 import django
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mb_backend.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mb_backend.settings.dev")
 django.setup()
 
 from django.db import connection, reset_queries
+from langchain.vectorstores import Chroma
+from langchain.embeddings import OpenAIEmbeddings
+from django.conf import settings
 
 
 def main():
@@ -86,8 +89,45 @@ def test_gpt_mini():
     print(response.choices[0].message.content)
 
 
+def ingest_gpt_data():
+    from langchain.vectorstores import Chroma
+    from langchain.embeddings import OpenAIEmbeddings
+    from django.conf import settings
+
+    orders = [
+        "Order ID 3779: Customer Sakala Moogodu has an evening subscription for 500 ml buffalo milk at ₹40. Delivery status: pending.",
+        "Order ID 3765: Customer Jathregamma received morning delivery of 500 ml buffalo milk at ₹40. Delivery status: delivered.",
+        "Order ID 3768: Customer Gudivada 4th floor received morning delivery of 1 L buffalo milk and evening 250 ml milk at ₹80 and ₹20 respectively. Status: delivered.",
+    ]
+
+    embeddings = OpenAIEmbeddings(model=settings.EMBEDDINGS_MODEL)
+    db = Chroma(persist_directory=settings.PERSIST_DIRECTORY, embedding_function=embeddings)
+    # rows = db._collection.get()['ids']
+
+    # if rows:
+    #     db._collection.delete(ids=rows)
+    #     db.persist()
+    # Store all orders in the vector database
+    db.add_texts(orders)
+    # for i, j in zip(rows['ids'][-10:], rows['documents'][-10:]):
+    #     print(i, j)
+
+
+def query_vector_db():
+    query = "what subscription does sakala moogodu has?"
+    embeddings = OpenAIEmbeddings()
+    VECTOR_DB = Chroma(embedding_function=embeddings, persist_directory=settings.PERSIST_DIRECTORY)
+
+    docs = VECTOR_DB.similarity_search(query, k=2)
+
+    for doc in docs:
+        print("🔎", doc.page_content)
+
+
 if __name__ == "__main__":
-    test_gpt_mini()
+    query_vector_db()
+    # ingest_gpt_data()
+    # test_gpt_mini()
     # test()
     # data_migration_for_june_orders()
     pass

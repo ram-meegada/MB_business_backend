@@ -14,12 +14,18 @@ from langchain.chains import create_retrieval_chain
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from PyPDF2 import PdfReader
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
 
 
 bujjiAI_logger = logging.getLogger('BujjiAI')
 
 embeddings = OpenAIEmbeddings(model=settings.EMBEDDINGS_MODEL)
 VECTOR_DB = Chroma(embedding_function=embeddings, persist_directory="./chroma_db")
+MEMORY = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True
+        )
 
 
 class UploadCsvToVectorView(APIView):
@@ -107,14 +113,25 @@ class AskBujjiView(APIView):
         retriever = VECTOR_DB.as_retriever(search_kwargs={"k": 3})
         llm = ChatOpenAI(model=settings.OPENAI_MODEL, temperature=0)
 
-        prompt = ChatPromptTemplate.from_messages([
-                    ("system", "Iam your boss. Call me Boss. You are a helpful assistant. If you don't know the answer, tell that you don't know"),
-                    ("human", "Context:\n{context}\n\nQuestion: {input}")
-                ])
+        # prompt = ChatPromptTemplate.from_messages([
+        #             ("system", "Call me Boss. You are a helpful assistant. If you don't know the answer, tell that you don't know"),
+        #             ("human", "Context:\n{context}\n\nQuestion: {input}")
+        #         ])
 
-        document_chain = create_stuff_documents_chain(llm, prompt)
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
-        response = retrieval_chain.invoke({"input": self.query})
+        # document_chain = create_stuff_documents_chain(llm, prompt)
+        # retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        qa_chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=retriever,
+        memory=MEMORY,
+        combine_docs_chain_kwargs={
+            "prompt": ChatPromptTemplate.from_messages([
+                ("system", "I am your Boss. You are my helpful assistant."),
+                ("human", "Chat history:\n{chat_history}\n\nContext:\n{context}\n\nQuestion: {question}")
+            ])
+        }
+    )
+        response = qa_chain.invoke({"question": self.query})
 
         self.api_data = response["answer"]
 
