@@ -24,6 +24,7 @@ SIMPLE_JWT = {
 }
 
 COOKIE_SECURE = False
+SAME_SITE = 'Lax'
 
 # Chroma db configuration
 

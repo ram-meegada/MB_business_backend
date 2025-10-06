@@ -35,7 +35,7 @@ def send_simple_mail(subject, message, to_mails):
 
 def created_at_verbose(created_at):
     try:
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
 
         if created_at >= (now - timedelta(hours=24)):
             seconds = (now - created_at).seconds

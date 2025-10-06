@@ -17,7 +17,7 @@ class ExpenditureAnalyticsView(APIView):
     '''
     def dispatch(self, request, *args, **kwargs):
         self.request = request
-        self.now = timezone.now()
+        self.now = timezone.localtime(timezone.now())
         self.year = self.now.year
         return super().dispatch(request, *args, **kwargs)
 

@@ -22,3 +22,4 @@ SIMPLE_JWT = {
 }
 
 COOKIE_SECURE = True
+SAME_SITE = "None"

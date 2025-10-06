@@ -16,7 +16,7 @@ class ExpenditureView(APIView):
     read_serializer = ExpenditureReadSerializer
 
     def dispatch(self, request, *args, **kwargs):
-        self.now = timezone.now()
+        self.now = timezone.localtime(timezone.now())
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request):

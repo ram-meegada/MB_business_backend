@@ -37,7 +37,7 @@ class LoginView(APIView):
                 max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
                 httponly=True,
                 secure=settings.COOKIE_SECURE,
-                samesite="None"
+                samesite=settings.SAME_SITE
             )
             return response
         else:

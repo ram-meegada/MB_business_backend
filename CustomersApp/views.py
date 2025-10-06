@@ -173,13 +173,13 @@ class AllPaymentsView(APIView):
     '''
     permission_classes = [IsDeliveryAgentOrAdmin]
     def get(self, request):
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         one_month_back = now - relativedelta(months=1)
 
         year = one_month_back.year
         month = one_month_back.month
 
-        queryset = MonthlyPaymentModel.objects.filter(month__month=month, month__year=year)
+        queryset = MonthlyPaymentModel.objects.filter(month__month=month, month__year=year, customer__isnull=False)
         totals = queryset.aggregate(total_due=Sum('amount_due'), total_paid=Sum('amount_paid'))
         payments = queryset.select_related('customer__user').order_by('-amount_due')
 
@@ -276,7 +276,7 @@ class OrdersListView(APIView):
         self.request = request
         self.api_data = None
         self.json_response = {'data': self.api_data, 'message': self.message}
-        self.now = timezone.now()
+        self.now = timezone.localtime(timezone.now())
         return super().dispatch(request, *args, **kwargs)
 
     def make_queryset(self):
@@ -286,6 +286,8 @@ class OrdersListView(APIView):
         self.api_data = []
 
         for order in self.orders:
+            if not order.customer:
+                continue
             temp_dict = {}
             temp_dict['id'] = order.pk
             temp_dict['customer'] = {"id": order.customer.user_id, "name": order.customer.user.name}
@@ -298,7 +300,10 @@ class OrdersListView(APIView):
 
     def validate_and_parse_input(self):
         self.date = self.request.data.get('date', self.now.date())
-    
+
+        if not self.date:
+            self.date = self.now.date()
+
     def post(self, request):
         try:
             self.validate_and_parse_input()
