@@ -16,6 +16,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from PyPDF2 import PdfReader
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
+from django.utils import timezone
 
 
 bujjiAI_logger = logging.getLogger('BujjiAI')
@@ -34,6 +35,7 @@ class UploadCsvToVectorView(APIView):
         self.message = "Success"
         self.api_data = None
         self.json_response = {'data': self.api_data, 'message': self.message}
+        self.now = timezone.localtime(timezone.now())
         return super().dispatch(request, *args, **kwargs)
     
     def prepare_docs(self):
@@ -49,11 +51,16 @@ class UploadCsvToVectorView(APIView):
     def build_api_response(self):
         self.prepare_docs()
 
-        vectordb = Chroma.from_documents(self.docs, embedding=embeddings, persist_directory=settings.PERSIST_DIRECTORY)
-        vectordb.persist()
+        vectordb = Chroma(persist_directory=settings.PERSIST_DIRECTORY, embedding_function=embeddings)
+        vectordb.add_documents(self.docs)
 
     def validate_and_parse_input(self):
         self.csv_file = self.request.data.get('csv_file')
+        self.source = self.request.data.get('source', 'unknown')
+        self.title = self.request.data.get('title', 'Dairy')
+        self.category = self.request.data.get('category', 'General')
+        self.date = self.request.data.get('date', self.now.date())
+        self.type = 'csv'
 
         if not self.csv_file:
             self.message = 'Csv file is required'
@@ -79,26 +86,44 @@ class UploadCsvToVectorView(APIView):
 class UploadPdfToVectorView(UploadCsvToVectorView):
     def validate_and_parse_input(self):
         self.pdf_file = self.request.FILES.get('pdf_file')
+        self.source = self.request.data.get('source', 'unknown')
+        self.title = self.request.data.get('title', 'Dairy')
+        self.category = self.request.data.get('category', 'General')
+        self.date = self.now.date().strftime('%Y-%m-%d')
+        self.type = 'pdf'
 
         if not self.pdf_file:
             self.message = 'Pdf file is required'
             self.status = 400
 
     def prepare_docs(self):
-        reader = PdfReader(self.pdf_file)
         text = ""
+        reader = PdfReader(self.pdf_file)
 
         for page in reader.pages:
             page_text = page.extract_text()
             if page_text:
                 text += page_text + "\n"
 
-        documents = [Document(page_content=text)]
+        if text:
+            documents = [
+                Document(
+                    page_content=text,
+                    metadata={
+                        "source": self.source,
+                        "title": self.title,
+                        "category": self.category,
+                        "date": self.date,
+                        "type": self.type
+                    })
+            ]
 
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-        self.docs = text_splitter.split_documents(documents)
-
-        bujjiAI_logger.info('Pdf reading successful')
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+            self.docs = text_splitter.split_documents(documents)
+            bujjiAI_logger.info('Pdf reading successful')
+        else:
+            self.message = 'There is no text in this file'
+            self.status = 400
 
 
 class AskBujjiView(APIView):
