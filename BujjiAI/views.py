@@ -21,7 +21,7 @@ from django.utils import timezone
 
 bujjiAI_logger = logging.getLogger('BujjiAI')
 
-embeddings = OpenAIEmbeddings(model=settings.EMBEDDINGS_MODEL)
+embeddings = OpenAIEmbeddings(model=settings.EMBEDDINGS_MODEL, api_key=settings.OPENAI_API_KEY)
 VECTOR_DB = Chroma(embedding_function=embeddings, persist_directory="./chroma_db")
 MEMORY = ConversationBufferMemory(
             memory_key="chat_history",
@@ -92,6 +92,10 @@ class UploadPdfToVectorView(UploadCsvToVectorView):
         self.date = self.now.date().strftime('%Y-%m-%d')
         self.type = 'pdf'
 
+        if not self.pdf_file.content_type.endswith('pdf'):
+            self.message = 'Only pdf files are allowed'
+            self.status = 400
+
         if not self.pdf_file:
             self.message = 'Pdf file is required'
             self.status = 400
@@ -135,8 +139,9 @@ class AskBujjiView(APIView):
         return super().dispatch(request, *args, **kwargs)
         
     def build_api_response(self):
-        retriever = VECTOR_DB.as_retriever(search_kwargs={"k": 3})
-        llm = ChatOpenAI(model=settings.OPENAI_MODEL, temperature=0)
+        import ipdb; ipdb.set_trace()
+        retriever = VECTOR_DB.as_retriever(search_kwargs={"k": 12})
+        llm = ChatOpenAI(model=settings.OPENAI_MODEL, temperature=0, api_key=settings.OPENAI_API_KEY)
 
         # prompt = ChatPromptTemplate.from_messages([
         #             ("system", "Call me Boss. You are a helpful assistant. If you don't know the answer, tell that you don't know"),

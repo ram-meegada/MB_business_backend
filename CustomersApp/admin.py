@@ -10,6 +10,7 @@ class SubscriptionPlanModelAdmin(admin.ModelAdmin):
 class CustomerSubscriptionModelAdmin(admin.ModelAdmin):
     list_display = ['customer_name', 'subscription_description', 'start_date', 'subscription_schedule']
     search_fields = ['user__name']
+    raw_id_fields = ['user', 'subscription']
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "delivery_agent":
