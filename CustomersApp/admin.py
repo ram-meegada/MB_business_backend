@@ -7,10 +7,16 @@ class SubscriptionPlanModelAdmin(admin.ModelAdmin):
     list_display = ['product', 'animal', 'description', 'schedule', 'quantity', 'price', 'evening_quantity', 'evening_price']
 
 
+@admin.action(description="Make customers inactive and soft delete")
+def mark_cus_inactive_delete(modeladmin, request, queryset):
+    queryset.update(is_deleted=True, is_active=False)
+    modeladmin.message_user(request, f"Selected customers are marked as inactive and soft deleted")
+
 class CustomerSubscriptionModelAdmin(admin.ModelAdmin):
-    list_display = ['customer_name', 'subscription_description', 'start_date', 'subscription_schedule']
+    list_display = ['customer_name', 'subscription_description', 'start_date', 'subscription_schedule', 'is_active', 'is_deleted']
     search_fields = ['user__name']
     raw_id_fields = ['user', 'subscription']
+    actions = [mark_cus_inactive_delete]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "delivery_agent":
@@ -28,6 +34,9 @@ class CustomerSubscriptionModelAdmin(admin.ModelAdmin):
     @admin.display()
     def subscription_schedule(self, obj):
         return obj.subscription.get_schedule_display()
+
+    def get_queryset(self, request):
+        return CustomerSubscriptionModel.allobjects.all().select_related('user', 'subscription')
 
 
 @admin.action(description="Mark order status as delivered")

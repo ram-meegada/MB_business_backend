@@ -27,6 +27,7 @@ urlpatterns = [
     path('expenditure/', include("Expenditure.urls")),
     path('customers/', include("CustomersApp.urls")),
     path('bujjiAI/', include("BujjiAI.urls")),
+    path('infra/', include("infra.urls")),
 ]
 
 if settings.DEBUG:
