@@ -37,7 +37,7 @@ INSTALLED_APPS = [
 
     'django_extensions',
     'django_cron',
-    # 'django_celery_beat',
+    'django_celery_beat',
 
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
@@ -168,10 +168,11 @@ BACKUP_COUNT = 2
 
 PRIMARY_MAIL = 'ramumeegada18@gmail.com'
 
-AWS_ACCESS_KEY_ID=config('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY=config('AWS_SECRET_ACCESS_KEY')
-AWS_BUCKET_NAME='mb-backend-s3-bucket'
-AWS_REGION='ap-south-1'
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_BUCKET_NAME = 'mb-backend-s3-bucket'
+AWS_REGION = 'ap-south-1'
+OPENAI_API_KEY = config('OPENAI_API_KEY')
 
 SEND_MAIL_OVER_QUERIES = False
 
@@ -274,6 +275,14 @@ LOGGING = {
             "maxBytes": FILE_SIZE,
             "backupCount": BACKUP_COUNT,
             "formatter": "verbose",
+        },
+        "bujjiAI_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "bujjiAI.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
         }
     },
     "loggers": {
@@ -320,6 +329,14 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
+        },
+        'BujjiAI': {
+            'handlers': ['bujjiAI_handler'],
+            'level': 'DEBUG',
+            'propagate': False,
         }
     },
 }
+
+
+NEWS_API = "fc5bf9c91f6c4e699bddffe2a847d13e"

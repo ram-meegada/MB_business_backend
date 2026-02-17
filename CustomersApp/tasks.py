@@ -24,13 +24,20 @@ def create_orders_for_the_day(self):
         elif now.hour in range(0, 12):
             shift = "morning"
             query = Q(subscription__schedule__in=[1, 3])
+        is_morning_delivery = False if shift == "evening" else True
 
         customer_subscriptions = CustomerSubscriptionModel.objects.filter(query, is_active=True)
+        aleady_created_orders = (OrdersModel.objects
+                                 .filter(
+                                     schedule_date=now.date(), 
+                                     is_morning_delivery=is_morning_delivery).values_list('customer', flat=True)
+                                )
+        customer_subscriptions = customer_subscriptions.exclude(id__in=aleady_created_orders)
         order_objs = []
 
         for cus_sub in customer_subscriptions:
             ord_obj = OrdersModel(status="pending", 
-                                    is_morning_delivery=False if shift == "evening" else True, 
+                                    is_morning_delivery=is_morning_delivery, 
                                     customer=cus_sub, 
                                     price_at_order=cus_sub.subscription.price if shift == "morning" else cus_sub.subscription.evening_price,
                                     schedule_date=now.today()
@@ -39,6 +46,7 @@ def create_orders_for_the_day(self):
 
         #Create orders as bulk list
         if order_objs: OrdersModel.objects.bulk_create(order_objs)
+        print(f"{len(order_objs)} orders created for {shift} shift")
     except Exception as err:
         send_simple_mail("Create orders for the day cron failed!", str(err), [settings.PRIMARY_MAIL])
         raise self.retry(exc=err)

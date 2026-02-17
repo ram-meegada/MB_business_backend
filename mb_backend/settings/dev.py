@@ -17,7 +17,7 @@ DATABASES = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=120),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     # "ROTATE_REFRESH_TOKENS": True,
     # "BLACKLIST_AFTER_ROTATION": True
@@ -25,3 +25,10 @@ SIMPLE_JWT = {
 
 COOKIE_SECURE = False
 SAME_SITE = 'Lax'
+
+# Chroma db configuration
+
+PERSIST_DIRECTORY = "./chroma_db"
+COLLECTION_NAME = "TESTING_COL"
+EMBEDDINGS_MODEL = "text-embedding-3-small"
+OPENAI_MODEL = "gpt-4o-mini"

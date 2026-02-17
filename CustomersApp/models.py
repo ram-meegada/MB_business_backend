@@ -55,6 +55,7 @@ class CustomerSubscriptionModel(BaseModel):
     delivery_agent = models.ForeignKey(UserModel, on_delete=models.SET_NULL, null=True, blank=True, related_name='deliveryAgent')
 
     objects = CustomersManager()
+    allobjects = models.Manager()
 
     def __str__(self):
         return str(self.pk)
