@@ -23,3 +23,9 @@ SIMPLE_JWT = {
 
 COOKIE_SECURE = True
 SAME_SITE = "None"
+
+
+PERSIST_DIRECTORY = "./chroma_db"
+COLLECTION_NAME = "TESTING_COL"
+EMBEDDINGS_MODEL = "text-embedding-3-small"
+OPENAI_MODEL = "gpt-4o-mini"
