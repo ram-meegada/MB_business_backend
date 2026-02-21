@@ -30,7 +30,7 @@ dataclasses-json==0.6.7
 dateparser==1.2.2
 decorator==5.2.1
 distro==1.9.0
-Django==5.1.7
+Django==5.2.11
 django-celery-beat==2.8.1
 django-cors-headers==4.7.0
 django-cron @ git+https://github.com/ram-meegada/django-cron-updated-ram@b12aa96fb6f3c1566ce33b9f3bc354bdd86e78ba
@@ -120,6 +120,7 @@ pydantic-settings==2.10.1
 pydantic_core==2.33.2
 Pygments==2.19.1
 PyJWT==2.9.0
+Pympler==1.1
 PyPDF2==3.0.1
 PyPika==0.48.9
 pyproject_hooks==1.2.0
