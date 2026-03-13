@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-04*fp#rg&n)g+q)$(_d4-looswhd3f6iyv%i1$bj0@fcdj7@)w'
 
-ALLOWED_HOSTS = ["127.0.0.1", "192.168.1.2", '192.168.1.23', 'localhost', 'mb-business-backend.onrender.com']
+ALLOWED_HOSTS = ["127.0.0.1", "192.168.68.118", 'localhost', 'mb-business-backend.onrender.com']
 
 # Application definition
 
@@ -174,7 +174,7 @@ AWS_BUCKET_NAME = 'mb-backend-s3-bucket'
 AWS_REGION = 'ap-south-1'
 OPENAI_API_KEY = config('OPENAI_API_KEY')
 
-SEND_MAIL_OVER_QUERIES = False
+SEND_MAIL_OVER_QUERIES = True
 
 ADMINS = [
     ('Ram', 'ramumeegada18@gmail.com'),
