@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'authentication',
     'livestock',
     'Expenditure',
-    'CustomersApp'
+    'CustomersApp',
+    'linkedIn_jobs',
 
 ]
 
@@ -283,7 +284,15 @@ LOGGING = {
             "maxBytes": FILE_SIZE,
             "backupCount": BACKUP_COUNT,
             "formatter": "verbose",
-        }
+        },
+        "jobs_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.join(LOGS_PATH, "jobs.log"),
+            "maxBytes": FILE_SIZE,
+            "backupCount": BACKUP_COUNT,
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django": {
@@ -332,6 +341,11 @@ LOGGING = {
         },
         'BujjiAI': {
             'handlers': ['bujjiAI_handler'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'JobsHandler': {
+            'handlers': ['jobs_handler'],
             'level': 'DEBUG',
             'propagate': False,
         }
