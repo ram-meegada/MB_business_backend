@@ -118,7 +118,7 @@ class JobsManager:
 
                 if r.status_code == 429:
                     wait = 20 * (attempt + 1)
-                    jobs_logger(f"Rate limited. Sleeping {wait}s")
+                    jobs_logger.warning(f"Rate limited. Sleeping {wait}s")
                     time.sleep(wait)
                     continue
 
