@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime, date
 from django.db import connection
 import tracemalloc
+from pympler import asizeof
 
 
 logger = logging.getLogger("Common")
@@ -108,3 +109,29 @@ def debugging_decorator(func):
 
         return result
     return wrapper
+
+
+def get_object_size(obj):
+    """
+    Returns size of object including nested children.
+
+    Returns:
+        {
+            "bytes": int,
+            "human_readable": str
+        }
+    """
+
+    size_bytes = asizeof.asizeof(obj)
+
+    def human_readable(size):
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
+            if size < 1024:
+                return f"{size:.2f} {unit}"
+            size /= 1024
+        return f"{size:.2f} PB"
+
+    return {
+        "bytes": size_bytes,
+        "human_readable": human_readable(size_bytes)
+    }
