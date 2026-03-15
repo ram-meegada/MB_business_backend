@@ -78,6 +78,7 @@ langchain-core==0.3.76
 langchain-openai==0.3.33
 langchain-text-splitters==0.3.11
 langsmith==0.4.27
+lxml==6.0.2
 markdown-it-py==4.0.0
 marshmallow==3.26.1
 matplotlib-inline==0.1.7
