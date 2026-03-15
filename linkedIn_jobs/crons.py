@@ -5,7 +5,7 @@ from linkedIn_jobs.models import Job
 
 class SaveLinkedInJobsCron(CronJobBase):
     """
-        Cron to create orders for morning and evening
+        Cron to ingest linked jobs
     """
     RUN_EVERY_MINS = 30
     RETRY_AFTER_FAILURE_MINS = 1
