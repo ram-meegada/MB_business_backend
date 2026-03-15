@@ -1,6 +1,7 @@
 from django.contrib import admin
 from datetime import datetime
 from CustomersApp.models import *
+from django.db.models import Q, Count
 
 
 class SubscriptionPlanModelAdmin(admin.ModelAdmin):
@@ -13,7 +14,8 @@ def mark_cus_inactive_delete(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Selected customers are marked as inactive and soft deleted")
 
 class CustomerSubscriptionModelAdmin(admin.ModelAdmin):
-    list_display = ['customer_name', 'subscription_description', 'start_date', 'subscription_schedule', 'is_active', 'is_deleted']
+    list_display = ['customer_name', 'subscription_description', 'start_date', 'subscription_schedule', 
+                    'is_active', 'is_deleted', 'orders_count']
     search_fields = ['user__name']
     raw_id_fields = ['user', 'subscription']
     actions = [mark_cus_inactive_delete]
@@ -35,8 +37,12 @@ class CustomerSubscriptionModelAdmin(admin.ModelAdmin):
     def subscription_schedule(self, obj):
         return obj.subscription.get_schedule_display()
 
+    @admin.display()
+    def orders_count(self, obj):
+        return obj.orders_count
+
     def get_queryset(self, request):
-        return CustomerSubscriptionModel.allobjects.all().select_related('user', 'subscription')
+        return CustomerSubscriptionModel.allobjects.all().annotate(orders_count=Count('ordersmodel')).select_related('user', 'subscription')
 
 
 @admin.action(description="Mark order status as delivered")

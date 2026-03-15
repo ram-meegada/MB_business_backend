@@ -7,6 +7,7 @@ import logging
 from dateutil import parser as dtparser
 from CustomersApp.models import CustomerSubscriptionModel
 from datetime import timedelta
+import sys
 
 common_logger = logging.getLogger('Common')
 
@@ -63,6 +64,40 @@ class BackfillOrdersView(APIView):
 
         except Exception as err:
             print(err, '----err----')
+            common_logger.info(err.args[0] if err.args else 'Something gone wrong')
+            self.message = 'Internal server error'
+            self.status = 500
+
+        self.json_response['message'] = self.message
+        return Response(self.json_response, status=self.status)
+
+class GetSysVersionAPI(APIView):    
+    def dispatch(self, request, *args, **kwargs):
+        self.status = 200
+        self.message = "Success"
+        self.request = request
+        self.api_data = None
+        self.json_response = {'data': self.api_data, 'message': self.message}
+        return super().dispatch(request, *args, **kwargs)
+        
+    def build_api_response(self):
+        data = {}
+
+        data['python_version'] = sys.version
+        self.api_data = data
+
+    def validate_and_parse_input(self):
+        pass
+
+    def get(self, request):
+        try:
+            self.validate_and_parse_input()
+
+            if self.status == 200:
+                self.build_api_response()
+                self.json_response["data"] = self.api_data
+
+        except Exception as err:
             common_logger.info(err.args[0] if err.args else 'Something gone wrong')
             self.message = 'Internal server error'
             self.status = 500
