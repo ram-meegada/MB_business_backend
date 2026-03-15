@@ -1,3 +1,5 @@
+from wsgiref import headers
+
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -10,7 +12,8 @@ jobs_logger = logging.getLogger('JobsHandler')
 
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9"
 }
 
 class JobsManager:
@@ -21,6 +24,8 @@ class JobsManager:
         self.source = source
         self.total_created = 0
         self.total_skipped = 0
+        self.session = requests.session()
+        self.session.headers.update(HEADERS)
         jobs_logger.info(f'Jobs ingestion started for {source}')
 
     def extract_company_slug(self, url):
@@ -83,7 +88,7 @@ class JobsManager:
     def get_job_description(self, job_id):
         url = self.JOB_DETAIL_URL + str(job_id)
 
-        r = requests.get(url, headers=HEADERS, timeout=30)
+        r = self.session.get(url, headers=HEADERS, timeout=30)
         soup = BeautifulSoup(r.text, "lxml")
         desc = soup.find("div", class_="show-more-less-html__markup")
 
@@ -108,7 +113,16 @@ class JobsManager:
             }
 
             jobs_logger.info(f'Started fetching data from URL for page {start}:- {self.BASE_URL}')
-            r = requests.get(self.BASE_URL, params=params, headers=HEADERS, timeout=30)
+            for attempt in range(5):
+                r = self.session.get(self.BASE_URL, params=params, timeout=30)
+
+                if r.status_code == 429:
+                    wait = 20 * (attempt + 1)
+                    jobs_logger(f"Rate limited. Sleeping {wait}s")
+                    time.sleep(wait)
+                    continue
+
+                break
             jobs_logger.info(f'Response of the URL:- {r.status_code}')
 
             if r.status_code != 200:
