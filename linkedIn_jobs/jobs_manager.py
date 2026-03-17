@@ -126,7 +126,8 @@ class JobsManager:
             jobs_logger.info(f'Response of the URL:- {r.status_code}')
 
             if r.status_code != 200:
-                raise Exception(f'Fetching data from URL failed:- {self.BASE_URL}')
+                print(f'Fetching data from URL failed:- {self.BASE_URL}, {r.text}')
+                raise Exception(f'Fetching data from URL failed:- {self.BASE_URL}, {r.text}')
 
             jobs = self.parse_job_cards(r.text)
             jobs_logger.info(f'Job cards parsed successfully')
@@ -197,3 +198,4 @@ class JobsManager:
         JobRawData.objects.filter(job__isnull=True).delete()
 
         jobs_logger.info(f'Total created:- {self.total_created}, Total skipped:- {self.total_skipped}')
+        print(f'Total created:- {self.total_created}, Total skipped:- {self.total_skipped}')
