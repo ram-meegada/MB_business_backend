@@ -5,7 +5,6 @@ from django.db.models import Q, Sum
 from dateutil.relativedelta import relativedelta
 from datetime import date
 import logging
-import ipdb
 from django.db.utils import IntegrityError
 
 crons_logger = logging.getLogger('Crons')

@@ -7,6 +7,7 @@ import time
 from linkedIn_jobs.models import Company, Job, JobRawData
 from utils.commonUtils import get_object_size
 import logging
+from linkedIn_jobs.utils import requests_with_retry
 
 jobs_logger = logging.getLogger('JobsHandler')
 
