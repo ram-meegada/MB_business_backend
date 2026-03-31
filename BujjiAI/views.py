@@ -139,7 +139,6 @@ class AskBujjiView(APIView):
         return super().dispatch(request, *args, **kwargs)
         
     def build_api_response(self):
-        import ipdb; ipdb.set_trace()
         retriever = VECTOR_DB.as_retriever(search_kwargs={"k": 12})
         llm = ChatOpenAI(model=settings.OPENAI_MODEL, temperature=0, api_key=settings.OPENAI_API_KEY)
 

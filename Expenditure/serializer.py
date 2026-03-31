@@ -2,7 +2,6 @@ from rest_framework import serializers
 from Expenditure.models import *
 from utils.commonUtils import created_at_verbose
 from django.utils import timezone
-import ipdb
 
 
 class ExpenditureWriteSerializer(serializers.ModelSerializer):

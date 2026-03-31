@@ -22,7 +22,7 @@ class SaveBackUpOfProdDbCron(CronJobBase):
         # shell_command = "pg_dump -h localhost -U your_pg_user -F c -f /tmp/backup.sql your_database_name"
 
         timestamp = timezone.localtime(timezone.now()).strftime('%Y-%d-%B-%H-%M')
-        filename = f"prod_backup_{timestamp}.sql"
+        filename = f"prod_backup_{timestamp}.dump"
         local_path = f"/tmp/{filename}"
         S3_BACKUPS_LOCATION = f'prod-backups/{filename}'
 

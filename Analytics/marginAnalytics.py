@@ -6,7 +6,6 @@ import logging
 from CustomersApp.models import MonthlyPaymentModel
 from Expenditure.models import ExpenditureModel
 from django.db.models import Sum
-import ipdb
 import calendar
 
 

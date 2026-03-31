@@ -6,7 +6,6 @@ from django.db.models import Sum
 import calendar
 from rest_framework.response import Response
 import logging
-import ipdb
 
 analytics_logger = logging.getLogger('Analytics')
 
