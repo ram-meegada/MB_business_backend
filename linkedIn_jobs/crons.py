@@ -1,6 +1,7 @@
 from django_cron import CronJobBase, Schedule
 from linkedIn_jobs.jobs_manager import JobsManager
 from linkedIn_jobs.models import Job
+from utils.commonUtils import printwrapper
 
 
 class SaveLinkedInJobsCron(CronJobBase):
@@ -14,6 +15,7 @@ class SaveLinkedInJobsCron(CronJobBase):
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS, retry_after_failure_mins=RETRY_AFTER_FAILURE_MINS)
     code = "SaveLinkedInJobsCron"
 
+    @printwrapper
     def do(self):
         jobs_manager = JobsManager(source=Job.LINKEDIN)
         jobs_manager.start()

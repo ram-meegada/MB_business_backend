@@ -5,6 +5,7 @@ from django.utils import timezone
 import os
 from utils.s3Boto import save_file_to_s3
 from django.conf import settings
+from utils.commonUtils import printwrapper
 
 
 class SaveBackUpOfProdDbCron(CronJobBase):
@@ -18,6 +19,7 @@ class SaveBackUpOfProdDbCron(CronJobBase):
     schedule = Schedule(run_at_times=RUN_AT_TIMES, retry_after_failure_mins=RETRY_AFTER_FAILURE_MINS)
     code = "SaveBackUpOfProdDbCron"
 
+    @printwrapper
     def do(self):
         # shell_command = "pg_dump -h localhost -U your_pg_user -F c -f /tmp/backup.sql your_database_name"
 
@@ -38,5 +40,7 @@ class SaveBackUpOfProdDbCron(CronJobBase):
         if os.path.exists(local_path):
             save_file_to_s3(local_path, S3_BACKUPS_LOCATION)
             os.remove(local_path)
+            print('Backup saved successfully')
         else:
+            print('Local path not found')
             raise Exception('Local path not found')

@@ -90,6 +90,11 @@ class JobsManager:
         url = self.JOB_DETAIL_URL + str(job_id)
 
         r = self.session.get(url, headers=HEADERS, timeout=30)
+        if r.status_code != 200:
+            msg = f'Fetching job description failed for job_id:- {job_id}, URL:- {url}, Response:- {r.text}, status code:- {r.status_code}'
+            print(msg)
+            jobs_logger.error(msg)
+            return None
         soup = BeautifulSoup(r.text, "lxml")
         desc = soup.find("div", class_="show-more-less-html__markup")
 

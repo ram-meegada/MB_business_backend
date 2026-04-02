@@ -6,6 +6,8 @@ from datetime import timedelta, datetime, date
 from django.db import connection
 import tracemalloc
 from pympler import asizeof
+import sys
+from io import StringIO
 
 
 logger = logging.getLogger("Common")
@@ -135,3 +137,31 @@ def get_object_size(obj):
         "bytes": size_bytes,
         "human_readable": human_readable(size_bytes)
     }
+
+
+def printwrapper(fun):
+    """
+    printwrapper is a wrapper function over other fucntion to catch stout console data 
+    and returned back to wrapped function
+
+    @printwrapper
+    def myfunction():
+        # this is your functon
+        pass
+
+    """
+    def _wrapped_fun(*args, **kwargs):
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
+        console_output = ""
+        try:
+            # do what you gotta do to create some output
+            functionreturn = fun(*args, **kwargs)
+            console_output = mystdout.getvalue()
+            if functionreturn:
+                console_output = str(functionreturn) + "\n" + console_output
+        finally:
+            sys.stdout = old_stdout
+            mystdout.close()
+        return console_output
+    return _wrapped_fun
