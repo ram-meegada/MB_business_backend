@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import date
 import logging
 from django.db.utils import IntegrityError
+from utils.commonUtils import printwrapper
 
 crons_logger = logging.getLogger('Crons')
 
@@ -21,6 +22,7 @@ class CreateDailyOrdersCron(CronJobBase):
     schedule = Schedule(run_at_times=RUN_AT_TIMES, retry_after_failure_mins=RETRY_AFTER_FAILURE_MINS)
     code = "CreateOrderCron"
 
+    @printwrapper
     def do(self):
         now = timezone.localtime(timezone.now())
         today_date = now.date()
@@ -52,12 +54,16 @@ class CreateDailyOrdersCron(CronJobBase):
                                     )
                 order_objs.append(ord_obj)
             else:
-                crons_logger.info(f'Order for {cus_sub.user.name} on date {today_date} for {shift} is already created.')
+                msg = f'Order for {cus_sub.user.name} on date {today_date} for {shift} is already created.'
+                print(msg)
+                crons_logger.info(msg)
 
         #Create orders as bulk list
         if order_objs:
             OrdersModel.objects.bulk_create(order_objs)
-            crons_logger.info(f'{len(order_objs)} order created for {shift}')
+            msg = f'{len(order_objs)} order created for {shift}'
+            print(msg)
+            crons_logger.info(msg)
 
 
 class GenerateMonthlyPaymentsCron(CronJobBase):
@@ -72,6 +78,7 @@ class GenerateMonthlyPaymentsCron(CronJobBase):
     schedule = Schedule(run_monthly_on_days=RUN_MONTHLY_ON_DAYS, run_at_times=RUN_AT_TIMES, retry_after_failure_mins=RETRY_AFTER_FAILURE_MINS)
     code = "GenerateMonthlyPaymentsCron"
 
+    @printwrapper
     def do(self):
         today = timezone.localtime(timezone.now())
         one_month_back = today - relativedelta(months=1)
@@ -100,4 +107,6 @@ class GenerateMonthlyPaymentsCron(CronJobBase):
 
         if payment_bulklist:
             MonthlyPaymentModel.objects.bulk_create(payment_bulklist)
-            crons_logger.info(f'{len(payment_bulklist)} payments created.')
+            msg = f'{len(payment_bulklist)} payments created.'
+            print(msg)
+            crons_logger.info(msg)
