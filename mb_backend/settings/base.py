@@ -188,8 +188,8 @@ ADMINS = [
 DJANGO_CRON_OUTPUT_ERRORS = True
 
 CRON_CLASSES = [
-    'CustomersApp.crons.GenerateMonthlyPaymentsCron',
-    'CustomersApp.crons.CreateDailyOrdersCron',
+    # 'CustomersApp.crons.GenerateMonthlyPaymentsCron',
+    # 'CustomersApp.crons.CreateDailyOrdersCron',
     'infra.crons.SaveBackUpOfProdDbCron',
 
     # Linked Jobs
