@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'pgvector.django',
 
     #Apps
     'authentication',
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'Expenditure',
     'CustomersApp',
     'linkedIn_jobs',
+    'BujjiAI',
 
 ]
 
@@ -198,6 +200,15 @@ CRON_CLASSES = [
 
 if not os.path.exists(LOGS_PATH):
     os.makedirs(LOGS_PATH)
+
+
+CHARGES = {
+    "gpt-4o-mini": {
+        "input_tokens": 0.15,
+        "output_tokens": 0.60,
+        "cached_input": 0.075
+    }
+}
 
 LOGGING = {
     "version": 1,

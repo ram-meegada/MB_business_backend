@@ -8,10 +8,15 @@ from dateutil import parser as dtparser
 from CustomersApp.models import CustomerSubscriptionModel
 from datetime import timedelta
 import sys
+from rest_framework.permissions import IsAdminUser
+from linkedIn_jobs.models import Skill, SKILLS_MAPPING
 
 common_logger = logging.getLogger('Common')
 
+
 class BackfillOrdersView(APIView):
+    permission_classes = [IsAdminUser]
+
     def dispatch(self, request, *args, **kwargs):
         self.status = 200
         self.message = "Success"
@@ -72,6 +77,7 @@ class BackfillOrdersView(APIView):
         return Response(self.json_response, status=self.status)
 
 class GetSysVersionAPI(APIView):    
+    permission_classes = [IsAdminUser]
     def dispatch(self, request, *args, **kwargs):
         self.status = 200
         self.message = "Success"
@@ -100,6 +106,49 @@ class GetSysVersionAPI(APIView):
         except Exception as err:
             common_logger.info(err.args[0] if err.args else 'Something gone wrong')
             self.message = 'Internal server error'
+            self.status = 500
+
+        self.json_response['message'] = self.message
+        return Response(self.json_response, status=self.status)
+
+class PushCanonicalSkillsToDB(APIView):
+    permission_classes = [IsAdminUser]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.status = 200
+        self.message = "Success"
+        self.request = request
+        self.api_data = {}
+        self.json_response = {'data': self.api_data, 'message': self.message}
+        return super().dispatch(request, *args, **kwargs)
+        
+    def push_canonical_skills_to_db(self):
+        bulk_lst = []
+
+        already_updated_skills = set(Skill.objects.filter(is_approved=True).values_list('name', 'category'))
+
+        for category, skills in SKILLS_MAPPING.items():
+            for skill in skills:
+                if (skill, category) not in already_updated_skills:
+                    bulk_lst.append(Skill(name=skill, category=category, is_approved=True))
+
+        Skill.objects.bulk_create(bulk_lst)
+        self.api_data['added_skills_count'] = len(bulk_lst)
+
+    def validate_and_parse_input(self):
+        pass
+
+    def post(self, request):
+        try:
+            self.validate_and_parse_input()
+
+            if self.status == 200:
+                self.push_canonical_skills_to_db()
+                self.json_response["data"] = self.api_data
+
+        except Exception as err:
+            common_logger.exception(err.args[0] if err.args else 'Something gone wrong')
+            self.message = str(err)
             self.status = 500
 
         self.json_response['message'] = self.message
