@@ -203,9 +203,10 @@ if not os.path.exists(LOGS_PATH):
 
 
 CHARGES = {
-    "gpt-4o-mini": {
-        "input_tokens": 0.15,
-        "output_tokens": 0.60,
+    # Per million tokens
+    "gpt-4o-mini-2024-07-18": {
+        "input_cost": 0.15,
+        "output_cost": 0.60,
         "cached_input": 0.075
     }
 }
