@@ -8,6 +8,10 @@ import numpy as np
 from typing import Optional, Tuple
 from django.db.models import QuerySet
 from sympy import content
+from BujjiAI.models import LLMUsage
+import time
+from linkedIn_jobs.models import Skill, JobSkill
+from django.db import transaction
 
 
 bujjiAI_logger = logging.getLogger('BujjiAI')
@@ -15,7 +19,7 @@ bujjiAI_logger = logging.getLogger('BujjiAI')
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
-def extract_skills_role_from_jd(job_description, job_id=None):
+def extract_skills_role_from_jd(job_description, job_id=None, request_type=LLMUsage.SKILLS_EXTRACTION):
     PROMPT = """
     Extract the following from the job description:
 
@@ -187,7 +191,7 @@ def extract_skills_role_from_jd(job_description, job_id=None):
 
     try:
         prompt = PROMPT.format(job_description=job_description)
-        content = call_openai(prompt, system_role="You are a helpful assistant for parsing job descriptions.")
+        content = call_openai(prompt, system_role="You are a helpful assistant for parsing job descriptions.", request_type=request_type)
         skills = json.loads(content)
     except json.JSONDecodeError:
         print("JSON decoding error")
@@ -199,7 +203,9 @@ def extract_skills_role_from_jd(job_description, job_id=None):
     return skills
 
 
-def call_openai(prompt, system_role):
+def call_openai(prompt, system_role, request_type):
+    start = time.time()
+
     response = client.chat.completions.create(
         model=settings.OPENAI_MODEL,
         temperature=0,
@@ -208,8 +214,52 @@ def call_openai(prompt, system_role):
             {"role": "user", "content": prompt}
         ]
     )
+
+    track_llm_usage(response, request_type, start)
     content = response.choices[0].message.content
     return content
+
+
+def track_llm_usage(response, request_type, start_time, **kwargs):
+    try:
+        usage = response.usage
+        model = response.model
+
+        LLMUsage.objects.create(
+            model=model,
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            total_tokens=usage.total_tokens,
+            cached_tokens=getattr(usage.prompt_tokens_details, 'cached_tokens', 0),
+            latency_ms=int((time.time() - start_time) * 1000),
+            request_type=request_type,
+            cost=calculate_llm_request_cost(model, usage.prompt_tokens, usage.completion_tokens, getattr(usage.prompt_tokens_details, 'cached_tokens', 0))
+        )
+
+        return response
+
+    except Exception as e:
+        LLMUsage.objects.create(
+            model=kwargs.get("model"),
+            is_success=False,
+            error_message=str(e),
+            latency_ms=int((time.time() - start_time) * 1000),
+            cost=0.0,
+        )
+        raise
+
+
+def calculate_llm_request_cost(model, prompt_tokens, completion_tokens, cached_tokens=0):
+    pricing = settings.CHARGES.get(model, {})
+    non_cached_tokens = prompt_tokens - cached_tokens
+
+    cost = (
+        (non_cached_tokens/1_000_000) * pricing.get('input_cost', 0) +
+        (cached_tokens/1_000_000) * pricing.get('cached_input', 0) +
+        (completion_tokens/1_000_000) * pricing.get('output_cost', 0)
+    )
+
+    return cost
 
 
 def generate_embedding(text: str) -> list:
@@ -283,3 +333,49 @@ def find_best_skill(
         return best_match, best_score
 
     return None, best_score
+
+
+class LLMExtractionManager:
+    def __init__(self, jobs_qs):
+        self.jobs_qs = jobs_qs  # Job.objects.filter(llm_processed=False, description__isnull=False)[:50]
+
+    def start(self):
+        try:
+            with transaction.atomic():
+                # pk_list = [21567, 20913, 20561, 18747, 17393, 17184, 16673, 22375, 22332]
+                # pk_list = [16673]
+                # jobs = Job.objects.filter(pk__in=pk_list)
+
+                for job in self.jobs_qs:
+                    bujjiAI_logger.info(f"Processing job ID {job.pk} - {job.title}")
+                    result = extract_skills_role_from_jd(job.description, job_id=job.pk)
+                    if not result:
+                        bujjiAI_logger.info(f"No skills extracted for job ID {job.pk}")
+                        continue
+                    
+                    bujjiAI_logger.info(f"Extracted data for job ID {job.pk}: {result}")
+                    skills_data = result.get("skills", {})
+                    primary_tech = result.get("primary_tech", "")
+                    role_category = result.get("role_category", "")
+                    min_years_exp = result.get("experience", {}).get("min_years")
+                    max_years_exp = result.get("experience", {}).get("max_years")
+
+                    if not skills_data or not primary_tech or not role_category:
+                        bujjiAI_logger.info(f"Insufficient data for job ID {job.pk}")
+                        continue
+
+                    job.min_experience = min_years_exp if min_years_exp is not None else None
+                    job.max_experience = max_years_exp if max_years_exp is not None else None
+                    job.primary_tech = primary_tech
+                    job.role_category = role_category
+                    job.llm_processed = True
+                    job.save()
+
+                    for category, skills in skills_data.items():
+                        for skill_name in skills:
+                            skill_obj, _ = Skill.allobjects.get_or_create(name=skill_name, category=category)
+                            JobSkill.objects.get_or_create(job=job, skill=skill_obj)
+
+                    bujjiAI_logger.info(f'processed job: {job.pk} - {job.title}')
+        except Exception as e:
+            bujjiAI_logger.error(f"Error processing jobs: {str(e)}")
